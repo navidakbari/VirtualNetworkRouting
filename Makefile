@@ -3,7 +3,7 @@ CFLAGS = -g -Wall -Wextra -Werror -D_REENTRANT -DCOLOR \
 				 -D__BSD_VISIBLE -DREADLINE -Isupport -I.
 LDFLAGS = -lpthread -lreadline
 
-SRCS = node.cpp dbg.cpp lnxparse.cpp
+SRCS = node.cpp dbg.cpp lnxparse.cpp link.cpp
 
 all: node 
 

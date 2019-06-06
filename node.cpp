@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "link.hpp"
 
 #ifdef READLINE
 #include <readline/readline.h>
@@ -17,6 +18,7 @@
 #include "dbg.hpp"
 #include "lnxparse.hpp"
 
+Link *link_layer;
 void help_cmd(const char *line) {
     (void) line;
 
@@ -124,8 +126,7 @@ int main(int argc, char **argv){
 
 
     //TODO Initialize your layers!
-
-
+    link_layer = new Link(atoi(argv[2]));
 
     while (1) {
 #ifdef READLINE
