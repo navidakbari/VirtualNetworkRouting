@@ -17,6 +17,7 @@
 
 #include "dbg.hpp"
 #include "lnxparse.hpp"
+#include "routing.hpp"
 
 Link *link_layer;
 void help_cmd(const char *line) {
@@ -126,8 +127,12 @@ int main(int argc, char **argv){
 
 
     //TODO Initialize your layers!
-    link_layer = new Link(atoi(argv[2]));
+    lnxinfo_t *links_info = parse_links(argv[1]);
+    link_layer = new Link(links_info->local_phys_port);
+    Routing *routing = new Routing(links_info);
+    routing->temp();
 
+    
     while (1) {
 #ifdef READLINE
 	if (!(line = readline("> "))) break;
