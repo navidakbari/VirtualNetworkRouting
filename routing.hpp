@@ -25,7 +25,7 @@ struct routing_table_info {
 
 class Routing {
 private:
-  // distance vector row and cols are virtual address;
+  // distance vector row and cols are phys_port;
   std::map<std::string, std::map<std::string, int> > distance_table;
   std::map<std::string, routing_table_info> routing_table;
   std::map<std::string, node_physical_info> nodes_info;
@@ -33,10 +33,12 @@ private:
   node_physical_info info;
 
   void fill_nodes_info(lnxinfo_t *links_info);
+  void fill_distance_table(lnxinfo_t *links_info);
+  void fill_routing_table();
 
 public:
   Routing(lnxinfo_t *links_info);
-  void fill_routing_table(lnxinfo_t *links_info);
+  
 };
 
 #endif

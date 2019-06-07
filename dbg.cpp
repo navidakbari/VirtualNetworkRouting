@@ -71,7 +71,34 @@ void dbg_init() {
 }
 
 void print_nodes_map(std::map<std::string, node_physical_info> m) {
+  cout << "virtual mapping is : " << endl;
   for (auto it = m.begin(); !m.empty() && it != m.end(); it++)
     cout << it->first << "  " << it->second.phys_ip << ":"
          << to_string(it->second.port) << endl;
+}
+
+void print_distance_table(std::map<std::string, std::map<std::string, int> > d) {
+  cout << "distance table is : " << endl;
+  if (d.begin() == d.end())
+    return;
+  map<string, int> firstMap = d.begin()->second;
+  cout << "     ";
+  for (auto it = firstMap.begin(); !firstMap.empty() && it != firstMap.end();
+       it++)
+    cout << it->first << " ";
+  cout << endl;
+  for (auto it = d.begin(); !d.empty() && it != d.end(); it++) {
+    cout << it->first << " ";
+    for (auto it2 = it->second.begin();
+         !it->second.empty() && it2 != it->second.end(); it2++)
+      cout << it2->second << " ";
+    cout << endl;
+  }
+}
+
+void print_routing_table(std::map<std::string, struct routing_table_info> r){
+  cout << "routing table is : " << endl;
+  for (auto it = r.begin(); !r.empty() && it != r.end(); it++)
+    cout << it->first << "  " << it->second.best_route_ip << ","
+         << to_string(it->second.cost) << endl;
 }
