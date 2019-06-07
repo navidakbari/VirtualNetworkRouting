@@ -130,7 +130,6 @@ int main(int argc, char **argv){
     lnxinfo_t *links_info = parse_links(argv[1]);
     link_layer = new Link(links_info->local_phys_port);
     Routing *routing = new Routing(links_info);
-    routing->temp();
 
     
     while (1) {

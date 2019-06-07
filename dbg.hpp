@@ -7,6 +7,9 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <limits.h>
+#include "routing.hpp"
+#include <string>
+#include <map>
 
 #define _NORMAL_    "\x1b[0m"
 #define _BLACK_     "\x1b[30m"
@@ -66,4 +69,5 @@ extern short dbg_initiated;
 void dbg_init();
 const char* DCOLOR(unsigned long long d_mode);
 
+void print_nodes_map(std::map<std::string, struct node_physical_info > m);
 #endif
