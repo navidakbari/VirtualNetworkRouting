@@ -44,6 +44,7 @@ private:
 public:
   Routing(lnxinfo_t *links_info);
   void send_routing_to_adj(Link link);
+  void send_quit_to_adj(Link link);
 };
 
 #endif

@@ -89,3 +89,10 @@ void Routing::send_routing_to_adj(Link link) {
     sleep(1);
   }
 }
+
+void Routing::send_quit_to_adj(Link link){
+  for (auto it = adj_mapping.begin();
+        !adj_mapping.empty() && it != adj_mapping.end(); it++) {
+      link.send_quit_msg("127.0.0.1", it->first);
+    }
+}

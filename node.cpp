@@ -137,7 +137,6 @@ int main(int argc, char **argv){
     Link *link_layer = new Link(links_info->local_phys_port);
     Routing *routing = new Routing(links_info);
 
-    //test
     std::thread sending_routing_table_thread(&Routing::send_routing_to_adj, routing, *link_layer);
     std::thread recv_routing_table_thread(&Link::recv_data, link_layer);
     
@@ -156,7 +155,10 @@ int main(int argc, char **argv){
 	    if (ret != EOF) help_cmd(line);
 	    continue;
 	}
-	if (!strcmp(cmd, "q")) break;
+	if (!strcmp(cmd, "q")){
+        routing->send_quit_to_adj(*link_layer);
+        break;
+    } 
 
 	for (i=0; i < sizeof(cmd_table) / sizeof(cmd_table[0]); i++){
 	    if (!strcmp(cmd, cmd_table[i].command)){

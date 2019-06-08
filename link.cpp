@@ -39,6 +39,13 @@ void Link::send_nodes_info(
   send_data(header, n_string, ip, port);
 }
 
+void Link::send_quit_msg(std::string ip, int port){
+  string quit_msg = "QUIT";
+  iphdr header;
+  header.protocol = IPPROTO_QUIT_MSG;
+  send_data(header, quit_msg, ip, port);
+}
+
 string
 Link::serialize_routing_table(map<int, routing_table_info> routing_table) {
   string data = "";
@@ -125,7 +132,7 @@ void Link::recv_data() {
     unsigned int len;
     size = recvfrom(sockfd, (char *)buffer, 1400, 0,
                     (struct sockaddr *)&client_addr, &len);
-    cerr << size << endl;
+    // cerr << size << endl;
     // TODO: recive data more than buffer
 
     iphdr rec_header;
@@ -137,7 +144,7 @@ void Link::recv_data() {
 
     string rec_data_str = rec_data;
 
-    cout << "header : " << (int) rec_header.protocol << endl << rec_data_str << endl;
+    // cout << "header : " << (int) rec_header.protocol << endl << rec_data_str << endl;
 
     for (unsigned int i = 0; i < handlers.size(); i++) {
       if (handlers[i].protocol_num == rec_header.protocol) {
