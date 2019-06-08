@@ -260,6 +260,10 @@ struct ip_timestamp
 
 #define	IP_MSS		576		/* default maximum segment size */
 
+#define IPPROTO_ROUTING_TABLE 200
+#define IPPROTO_NODES_INFO 201
+#define IPPROTO_DATA 0
+
 __END_DECLS
 
 #endif /* netinet/ip.h */
