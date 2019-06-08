@@ -31,6 +31,7 @@ void Routing::fill_nodes_info(lnxinfo_t *links_info) {
   }
   print_nodes_map(nodes_info);
 }
+
 void Routing::fill_distance_table(lnxinfo_t *links_info) {
   lnxbody_t *node = links_info->body;
   while (node != NULL) {
@@ -49,6 +50,7 @@ void Routing::fill_distance_table(lnxinfo_t *links_info) {
   }
   print_distance_table(distance_table);
 }
+
 void Routing::fill_routing_table() {
   for (auto it = distance_table.begin();
        !distance_table.empty() && it != distance_table.end(); it++) {
@@ -74,11 +76,16 @@ void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
   }
 }
 
-void Routing::send_routing_to_adj(Link *link) {
+void Routing::send_routing_to_adj(Link link) {
   // link->send_data(&routing_table, );
-  for (auto it = adj_mapping.begin();
-       !adj_mapping.empty() && it != adj_mapping.end(); it++) {
-    link->send_routing_table(routing_table, "127.0.0.1", it->first);
-    link->send_nodes_info(nodes_info, "127.0.0.1", it->first);
+  // cout <<"sending data to adj" << endl;
+  // print_routing_table(routing_table);
+  while(true){
+    for (auto it = adj_mapping.begin();
+        !adj_mapping.empty() && it != adj_mapping.end(); it++) {
+      link.send_routing_table(routing_table, "127.0.0.1", it->first);
+      link.send_nodes_info(nodes_info, "127.0.0.1", it->first);
+    }
+    sleep(1);
   }
 }

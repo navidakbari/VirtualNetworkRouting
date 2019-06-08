@@ -4,10 +4,13 @@
 #include <limits.h>
 #include <inttypes.h>
 #include <arpa/inet.h>
+#include <iostream>
 #include <errno.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <thread>
+#include <functional>
 #include "link.hpp"
 
 #ifdef READLINE
@@ -19,7 +22,10 @@
 #include "lnxparse.hpp"
 #include "routing.hpp"
 
-Link *link_layer;
+
+std::thread sending_routing_table_thread;
+std::thread recv_routing_table_thread;
+
 void help_cmd(const char *line) {
     (void) line;
 
@@ -128,13 +134,12 @@ int main(int argc, char **argv){
 
     //TODO Initialize your layers!
     lnxinfo_t *links_info = parse_links(argv[1]);
-    link_layer = new Link(links_info->local_phys_port);
+    Link *link_layer = new Link(links_info->local_phys_port);
     Routing *routing = new Routing(links_info);
 
     //test
-    routing->send_routing_to_adj(link_layer);
-    link_layer->recv_data();
-
+    std::thread sending_routing_table_thread(&Routing::send_routing_to_adj, routing, *link_layer);
+    std::thread recv_routing_table_thread(&Link::recv_data, link_layer);
     
     while (1) {
 #ifdef READLINE
@@ -174,7 +179,8 @@ int main(int argc, char **argv){
 
 
     //TODO Clean up your layers!
-
+    sending_routing_table_thread.detach();
+    recv_routing_table_thread.detach();
 
     printf("\nGoodbye!\n\n");
     return 0;

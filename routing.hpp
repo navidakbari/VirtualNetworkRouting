@@ -25,7 +25,7 @@ struct routing_table_info {
   int cost;
 };
 
-class Routing {
+class Routing  {
 private:
   // distance vector row and cols are phys_port;
   std::map<int, std::map<int, int> > distance_table;
@@ -43,7 +43,7 @@ private:
 
 public:
   Routing(lnxinfo_t *links_info);
-  void send_routing_to_adj(Link *link);
+  void send_routing_to_adj(Link link);
 };
 
 #endif

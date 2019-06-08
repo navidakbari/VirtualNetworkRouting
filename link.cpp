@@ -116,32 +116,34 @@ int Link::send_data(iphdr header, string data, string ip, int port) {
 }
 
 void Link::recv_data() {
-  struct sockaddr_in client_addr;
-  memset(&client_addr, 0, sizeof(client_addr)); 
+  while(true){
+    struct sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr)); 
 
-  char buffer[1400];
-  int size;
-  unsigned int len;
-  size = recvfrom(sockfd, (char *)buffer, 1400, 0,
-                  (struct sockaddr *)&client_addr, &len);
-  cerr << size << endl;
-  // TODO: recive data more than buffer
+    char buffer[1400];
+    int size;
+    unsigned int len;
+    size = recvfrom(sockfd, (char *)buffer, 1400, 0,
+                    (struct sockaddr *)&client_addr, &len);
+    cerr << size << endl;
+    // TODO: recive data more than buffer
 
-  iphdr rec_header;
-  char *rec_data = (char *)malloc(size + 1 - sizeof(iphdr));
+    iphdr rec_header;
+    char *rec_data = (char *)malloc(size + 1 - sizeof(iphdr));
 
-  memcpy(&rec_header, buffer, sizeof(iphdr));
-  memcpy(rec_data, buffer + sizeof(iphdr), size - sizeof(iphdr));
-  rec_data[size + 1 - sizeof(iphdr)] = '/0';
+    memcpy(&rec_header, buffer, sizeof(iphdr));
+    memcpy(rec_data, buffer + sizeof(iphdr), size - sizeof(iphdr));
+    rec_data[size + 1 - sizeof(iphdr)] = '/0';
 
-  string rec_data_str = rec_data;
+    string rec_data_str = rec_data;
 
-  cout << "header : " << (int) rec_header.protocol << endl << rec_data_str << endl;
+    cout << "header : " << (int) rec_header.protocol << endl << rec_data_str << endl;
 
-  for (unsigned int i = 0; i < handlers.size(); i++) {
-    if (handlers[i].protocol_num == rec_header.protocol) {
-      handlers[i].handler(rec_data_str, rec_header);
-      return;
+    for (unsigned int i = 0; i < handlers.size(); i++) {
+      if (handlers[i].protocol_num == rec_header.protocol) {
+        handlers[i].handler(rec_data_str, rec_header);
+        return;
+      }
     }
   }
 }

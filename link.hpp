@@ -26,7 +26,7 @@ class Link {
 private:
   /* data */
   struct sockaddr_in address;
-  int sockfd;
+ 
   std::vector<protocol_handler> handlers;
 
   std::string serialize_routing_table(
@@ -40,6 +40,7 @@ private:
   std::vector<std::string> tokenize(const std::string &str, char delim);
 
 public:
+ int sockfd;
   Link(int port);
   int send_data(iphdr header, std::string data, std::string ip, int port);
   void recv_data();
