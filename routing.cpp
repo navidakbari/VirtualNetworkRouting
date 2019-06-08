@@ -7,17 +7,11 @@ Routing::Routing(lnxinfo_t *links_info) {
   info.phys_ip = "localhost";
 
   fill_nodes_info(links_info);
+  fill_adj_mapping(links_info);
   fill_distance_table(links_info);
   fill_routing_table();
 
   lnxbody_t *node = links_info->body;
-
-  // for(unsigned int i = 0 ; i < all_nodes.size() ; i++){
-  //     for(unsigned int j = 0 ; j < all_nodes.size() ; j++){
-  //         cout << distance_table[all_nodes[j]][all_nodes[i]] << " ";
-  //     }
-  //     cout << endl;
-  // }
 }
 
 void Routing::fill_nodes_info(lnxinfo_t *links_info) {
@@ -40,14 +34,14 @@ void Routing::fill_nodes_info(lnxinfo_t *links_info) {
 void Routing::fill_distance_table(lnxinfo_t *links_info) {
   lnxbody_t *node = links_info->body;
   while (node != NULL) {
-    string dst = inet_ntoa(node->remote_virt_ip);
+    int dst = node->remote_phys_port;
     lnxbody_t *node2 = links_info->body;
-    map<string, int> row;
+    map<int, int> row;
     while (node2 != NULL) {
-      if (inet_ntoa(node2->remote_virt_ip) == dst)
-        row[inet_ntoa(node2->local_virt_ip)] = 1;
+      if (node2->remote_phys_port == dst)
+        row[node2->remote_phys_port] = 1;
       else
-        row[inet_ntoa(node2->local_virt_ip)] = INFINITY;
+        row[node2->remote_phys_port] = INFINITY;
       node2 = node2->next;
     }
     distance_table[dst] = row;
@@ -58,16 +52,33 @@ void Routing::fill_distance_table(lnxinfo_t *links_info) {
 void Routing::fill_routing_table() {
   for (auto it = distance_table.begin();
        !distance_table.empty() && it != distance_table.end(); it++) {
-    map<string, int> row = it->second;
+    map<int, int> row = it->second;
     routing_table_info min;
     min.cost = INFINITY;
-    for(auto it2 = row.begin(); !row.empty() && it2 != row.end(); it2++){
-      if(min.cost > it2->second){
+    for (auto it2 = row.begin(); !row.empty() && it2 != row.end(); it2++) {
+      if (min.cost > it2->second) {
         min.cost = it2->second;
-        min.best_route_ip = it2->first;
+        min.best_route_port = it2->first;
       }
     }
     routing_table[it->first] = min;
   }
   print_routing_table(routing_table);
+}
+
+void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
+  lnxbody_t *node = links_info->body;
+  while (node != NULL) {
+    adj_mapping[node->remote_phys_port] = inet_ntoa(node->local_virt_ip);
+    node = node->next;
+  }
+}
+
+void Routing::send_routing_to_adj(Link *link) {
+  // link->send_data(&routing_table, );
+  for (auto it = adj_mapping.begin();
+       !adj_mapping.empty() && it != adj_mapping.end(); it++) {
+    link->send_routing_table(routing_table, "127.0.0.1", it->first);
+    link->send_nodes_info(nodes_info, "127.0.0.1", it->first);
+  }
 }

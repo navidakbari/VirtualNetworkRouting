@@ -69,6 +69,6 @@ void dbg_init();
 const char *DCOLOR(unsigned long long d_mode);
 
 void print_nodes_map(std::map<std::string, struct node_physical_info> m);
-void print_distance_table(std::map<std::string, std::map<std::string, int> > d);
-void print_routing_table(std::map<std::string, struct routing_table_info> r);
+void print_distance_table(std::map<int, std::map<int, int> > d);
+void print_routing_table(std::map<int, struct routing_table_info> r);
 #endif

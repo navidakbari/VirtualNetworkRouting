@@ -131,6 +131,10 @@ int main(int argc, char **argv){
     link_layer = new Link(links_info->local_phys_port);
     Routing *routing = new Routing(links_info);
 
+    //test
+    routing->send_routing_to_adj(link_layer);
+    link_layer->recv_data();
+
     
     while (1) {
 #ifdef READLINE

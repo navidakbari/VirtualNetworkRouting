@@ -77,11 +77,11 @@ void print_nodes_map(std::map<std::string, node_physical_info> m) {
          << to_string(it->second.port) << endl;
 }
 
-void print_distance_table(std::map<std::string, std::map<std::string, int> > d) {
+void print_distance_table(std::map<int, std::map<int, int> > d) {
   cout << "distance table is : " << endl;
   if (d.begin() == d.end())
     return;
-  map<string, int> firstMap = d.begin()->second;
+  map<int, int> firstMap = d.begin()->second;
   cout << "     ";
   for (auto it = firstMap.begin(); !firstMap.empty() && it != firstMap.end();
        it++)
@@ -96,9 +96,9 @@ void print_distance_table(std::map<std::string, std::map<std::string, int> > d) 
   }
 }
 
-void print_routing_table(std::map<std::string, struct routing_table_info> r){
+void print_routing_table(std::map<int, struct routing_table_info> r){
   cout << "routing table is : " << endl;
   for (auto it = r.begin(); !r.empty() && it != r.end(); it++)
-    cout << it->first << "  " << it->second.best_route_ip << ","
+    cout << it->first << "  " << it->second.best_route_port << ","
          << to_string(it->second.cost) << endl;
 }
