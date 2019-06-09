@@ -90,6 +90,7 @@ void Routing::update_distance_table(
     row[from] = EDGE_WEIGHT + it->second.cost;
     new_distance_table[it->first] = row;
   }
+  
   // second update existing rows
   for (auto it = taken_routing_table.begin();
        !taken_routing_table.empty() && it != taken_routing_table.end() &&
@@ -100,6 +101,7 @@ void Routing::update_distance_table(
   }
 
   distance_table = new_distance_table;
+  print_distance_table(distance_table);
   fill_routing_table();
 }
 
@@ -134,4 +136,23 @@ void Routing::send_quit_to_adj(Link link) {
        !adj_mapping.empty() && it != adj_mapping.end(); it++) {
     link.send_quit_msg("127.0.0.1", it->first);
   }
+}
+
+void Routing::delete_node(int port){
+  distance_table.erase(port);
+
+  for(auto it = distance_table.begin();
+   !distance_table.empty() && it!= distance_table.end() ; it++){
+     it->second.erase(port);
+  }
+
+  routing_table.erase(port);
+
+  for(auto it = nodes_info.begin();
+      !nodes_info.empty() && it != nodes_info.end() ; it++){
+        if(it->second.port == port)
+          nodes_info.erase(it);
+      }
+
+  adj_mapping.erase(port);
 }

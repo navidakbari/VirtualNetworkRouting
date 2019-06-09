@@ -147,7 +147,7 @@ void Link::recv_data() {
     string rec_data_str = rec_data;
 
     // cout << "header : " << (int) rec_header.protocol << endl << rec_data_str << endl;
-    cout << rec_header.saddr << endl;
+    // cout << rec_header.saddr << endl;
     for (unsigned int i = 0; i < handlers.size(); i++) {
       if (handlers[i].protocol_num == rec_header.protocol) {
         handlers[i].handler(rec_data_str, rec_header);
