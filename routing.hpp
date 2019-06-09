@@ -54,6 +54,7 @@ public:
                         std::map<int, routing_table_info> taken_routing_table);
   void
   update_nodes_info(std::map<std::string, node_physical_info> taken_nodes_info);
+  void delete_expired_nodes();
 };
 
 #endif

@@ -27,6 +27,7 @@ using namespace std;
 
 std::thread sending_routing_table_thread;
 std::thread recv_routing_table_thread;
+std::thread delete_expired_nodes_thread;
 Link *link_layer;
 Routing *routing;
 void help_cmd(const char *line) {
@@ -132,6 +133,7 @@ void recv_routing_table_handler(std::string data, iphdr header) {
     std::map<int, routing_table_info> routing_table =
         Link::deserialize_routing_table(data);
     routing->update_distance_table((int) header.saddr, routing_table);
+    // routing->delete_expired_nodes();
 }
 
 void recv_nodes_info_handler(std::string data, iphdr header) {
@@ -177,6 +179,8 @@ int main(int argc, char **argv){
 
     std::thread sending_routing_table_thread(&Routing::send_routing_to_adj, routing, *link_layer);
     std::thread recv_routing_table_thread(&Link::recv_data, link_layer);
+    std::thread delete_expired_nodes_thread(&Routing::delete_expired_nodes, routing);
+
     
     while (1) {
 #ifdef READLINE
@@ -221,6 +225,7 @@ int main(int argc, char **argv){
     //TODO Clean up your layers!
     sending_routing_table_thread.detach();
     recv_routing_table_thread.detach();
+    delete_expired_nodes_thread.detach();
 
     printf("\nGoodbye!\n\n");
     return 0;
