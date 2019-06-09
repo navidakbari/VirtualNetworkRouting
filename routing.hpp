@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <string>
 #include <vector>
+#include <ctime>
 
 #include "lnxparse.hpp"
 #define INFINITY INT_MAX
@@ -34,6 +35,7 @@ private:
   std::map<int, routing_table_info> routing_table;
   std::map<std::string, node_physical_info> nodes_info;
   std::map<int, std::string> adj_mapping;
+  std::map<int, long> creation_time;
   // std::vector<int> all_nodes;
   node_physical_info info;
 

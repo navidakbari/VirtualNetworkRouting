@@ -173,6 +173,7 @@ int main(int argc, char **argv){
     link_layer->register_handler(get_handler(&recv_data_handler , IPPROTO_DATA));
     link_layer->register_handler(get_handler(&recv_routing_table_handler, IPPROTO_ROUTING_TABLE));
     link_layer->register_handler(get_handler(&recv_nodes_info_handler, IPPROTO_NODES_INFO));
+    link_layer->register_handler(get_handler(&quit_msg_handler, IPPROTO_QUIT_MSG));
 
     std::thread sending_routing_table_thread(&Routing::send_routing_to_adj, routing, *link_layer);
     std::thread recv_routing_table_thread(&Link::recv_data, link_layer);

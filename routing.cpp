@@ -11,6 +11,11 @@ Routing::Routing(lnxinfo_t *links_info) {
   fill_distance_table(links_info);
   fill_routing_table();
 
+  for (auto it = distance_table.begin();
+       !distance_table.empty() && distance_table.end() != it; it++) {
+    creation_time[it->first] = (long) time(0);
+  }
+
   lnxbody_t *node = links_info->body;
 }
 
@@ -66,6 +71,7 @@ void Routing::fill_routing_table() {
     routing_table[it->first] = min;
   }
   print_routing_table(routing_table);
+  print_creation_time(creation_time);
 }
 
 void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
@@ -81,20 +87,24 @@ void Routing::update_distance_table(
   std::map<int, std::map<int, int>> new_distance_table = distance_table;
   for (auto it = taken_routing_table.begin();
        !taken_routing_table.empty() && it != taken_routing_table.end(); it++) {
-    if (it->first == info.port)
+    if (it->first == info.port || it->second.best_route_port == info.port)
       continue;
+    creation_time[from] = (long) time(0);
     if (!does_dv_have_row(it->first)) {
       // first recognize new rows
       map<int, int> row;
       for (auto it = adj_mapping.begin();
-      !adj_mapping.empty() && it != adj_mapping.end(); it++)
+           !adj_mapping.empty() && it != adj_mapping.end(); it++)
         row[it->first] = INFINITY;
       row[from] = EDGE_WEIGHT + it->second.cost;
       new_distance_table[it->first] = row;
+      creation_time[it->first] = (long) time(0);
     } else {
       // second update existing rows
-      if (new_distance_table[it->first][from] > EDGE_WEIGHT + it->second.cost)
+      if (new_distance_table[it->first][from] > EDGE_WEIGHT + it->second.cost) {
         new_distance_table[it->first][from] = EDGE_WEIGHT + it->second.cost;
+      }
+      creation_time[it->first] = (long) time(0);
     }
   }
 
@@ -136,21 +146,21 @@ void Routing::send_quit_to_adj(Link link) {
   }
 }
 
-void Routing::delete_node(int port){
+void Routing::delete_node(int port) {
   distance_table.erase(port);
 
-  for(auto it = distance_table.begin();
-   !distance_table.empty() && it!= distance_table.end() ; it++){
-     it->second.erase(port);
+  for (auto it = distance_table.begin();
+       !distance_table.empty() && it != distance_table.end(); it++) {
+    it->second.erase(port);
   }
 
   routing_table.erase(port);
 
-  for(auto it = nodes_info.begin();
-      !nodes_info.empty() && it != nodes_info.end() ; it++){
-        if(it->second.port == port)
-          nodes_info.erase(it);
-      }
+  for (auto it = nodes_info.begin();
+       !nodes_info.empty() && it != nodes_info.end(); it++) {
+    if (it->second.port == port)
+      nodes_info.erase(it);
+  }
 
   adj_mapping.erase(port);
 }

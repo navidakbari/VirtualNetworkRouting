@@ -102,3 +102,10 @@ void print_routing_table(std::map<int, struct routing_table_info> r){
     cout << it->first << "  " << it->second.best_route_port << ","
          << to_string(it->second.cost) << endl;
 }
+
+void print_creation_time(std::map<int, long> c) {
+  cout << "creation time is : " << endl;
+  for (auto it = c.begin(); !c.empty() && it != c.end(); it++) {
+    cout << it->first << " " << it->second << endl;
+  }
+}
