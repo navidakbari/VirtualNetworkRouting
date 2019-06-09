@@ -23,6 +23,7 @@
 #include "lnxparse.hpp"
 #include "routing.hpp"
 
+using namespace std;
 
 std::thread sending_routing_table_thread;
 std::thread recv_routing_table_thread;
