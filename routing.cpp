@@ -8,6 +8,7 @@ Routing::Routing(lnxinfo_t *links_info) {
 
   fill_nodes_info(links_info);
   fill_adj_mapping(links_info);
+  fill_interfaces(links_info);
   // fill_distance_table(links_info);
   // fill_routing_table();
 
@@ -17,6 +18,21 @@ Routing::Routing(lnxinfo_t *links_info) {
   // }
 
   lnxbody_t *node = links_info->body;
+}
+
+void Routing::fill_interfaces(lnxinfo_t *links_info) {
+  lnxbody_t *node = links_info->body;
+  while (node != NULL) {
+    interface new_interface;
+    new_interface.local = inet_ntoa(node->local_virt_ip);
+    new_interface.remote = inet_ntoa(node->remote_virt_ip);
+    interfaces.push_back(new_interface);
+    node = node->next;
+  }
+}
+
+std::vector<interface> Routing::get_interfaces() {
+  return interfaces;
 }
 
 void Routing::fill_nodes_info(lnxinfo_t *links_info) {

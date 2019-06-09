@@ -45,7 +45,8 @@ void help_cmd(const char *line) {
 void interfaces_cmd(const char *line){
     (void) line;
     //TODO interfaces
-    dbg(DBG_ERROR, "interfaces_cmd: NOT YET IMPLEMENTED\n");
+    print_interfaces(routing->get_interfaces());
+    // dbg(DBG_ERROR, "interfaces_cmd: NOT YET IMPLEMENTED\n");
 }
 
 void routes_cmd(const char *line){
@@ -110,9 +111,9 @@ struct {
   {"help", help_cmd},
   {"h", help_cmd},
   {"interfaces", interfaces_cmd},
-  {"i", interfaces_cmd},
+  {"li", interfaces_cmd},
   {"routes", routes_cmd},
-  {"r", routes_cmd},
+  {"lr", routes_cmd},
   {"down", down_cmd},
   {"up", up_cmd},
   {"send", send_cmd}

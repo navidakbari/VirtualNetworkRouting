@@ -77,7 +77,7 @@ void print_nodes_map(std::map<std::string, node_physical_info> m) {
          << to_string(it->second.port) << endl;
 }
 
-void print_distance_table(std::map<int, std::map<int, int> > d) {
+void print_distance_table(std::map<int, std::map<int, int>> d) {
   cout << "distance table is : " << endl;
   if (d.begin() == d.end())
     return;
@@ -96,7 +96,7 @@ void print_distance_table(std::map<int, std::map<int, int> > d) {
   }
 }
 
-void print_routing_table(std::map<int, struct routing_table_info> r){
+void print_routing_table(std::map<int, struct routing_table_info> r) {
   cout << "routing table is : " << endl;
   for (auto it = r.begin(); !r.empty() && it != r.end(); it++)
     cout << it->first << "  " << it->second.best_route_port << ","
@@ -107,5 +107,17 @@ void print_creation_time(std::map<int, long> c) {
   cout << "creation time is : " << endl;
   for (auto it = c.begin(); !c.empty() && it != c.end(); it++) {
     cout << it->first << " " << it->second << endl;
+  }
+}
+
+void print_interfaces(std::vector<interface> interfaces) {
+  cout << "id"
+       << "     "
+       << "rem"
+       << "               "
+       << "loc" << endl;
+  for (int i = 0; i < interfaces.size(); i++) {
+    cout << i << "      " << interfaces[i].remote << "       "
+         << interfaces[i].local << endl;
   }
 }
