@@ -34,7 +34,7 @@ private:
   std::string serialize_nodes_info(
       std::map<std::string, struct node_physical_info> nodes_info);
 
-  std::vector<std::string> tokenize(const std::string &str, char delim);
+  static std::vector<std::string> tokenize(const std::string &str, char delim);
 
 public:
   Link(int port);

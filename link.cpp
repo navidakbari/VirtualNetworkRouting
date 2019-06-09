@@ -79,9 +79,9 @@ vector<string> Link::tokenize(const string &cnt, char delimiter) {
 map<int, routing_table_info> Link::deserialize_routing_table(string data) {
   map<int, routing_table_info> m;
   vector<string> rows;
-  rows = tokenize(data, '\n');
+  rows = Link::tokenize(data, '\n');
   for (unsigned int i = 0; i < rows.size(); i++) {
-    vector<string> cols = tokenize(rows[i], ' ');
+    vector<string> cols = Link::tokenize(rows[i], ' ');
     routing_table_info r;
     r.best_route_port = stoi(cols[1]);
     r.cost = stoi(cols[2]);
@@ -93,9 +93,9 @@ map<int, routing_table_info> Link::deserialize_routing_table(string data) {
 map<string, node_physical_info> Link::deserialize_nodes_info(string data) {
   map<string, node_physical_info> m;
   vector<string> rows;
-  rows = tokenize(data, '\n');
+  rows = Link::tokenize(data, '\n');
   for (unsigned int i = 0; i < rows.size(); i++) {
-    vector<string> cols = tokenize(rows[i], ' ');
+    vector<string> cols = Link::tokenize(rows[i], ' ');
     node_physical_info n;
     n.phys_ip = cols[1];
     n.port = stoi(cols[2]);
