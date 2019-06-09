@@ -76,13 +76,52 @@ void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
   }
 }
 
+void Routing::update_distance_table(
+    int from, std::map<int, routing_table_info> taken_routing_table) {
+  std::map<int, std::map<int, int>> new_distance_table;
+  // first recognize new rows
+  for (auto it = taken_routing_table.begin();
+       !taken_routing_table.empty() && it != taken_routing_table.end() &&
+       !does_dv_have_row(it->first);
+       it++) {
+    map<int, int> row;
+    for (auto it = adj_mapping.begin(); it != adj_mapping.end(); it++)
+      row[it->first] = INFINITY;
+    row[from] = EDGE_WEIGHT + it->second.cost;
+    new_distance_table[it->first] = row;
+  }
+  // second update existing rows
+  for (auto it = taken_routing_table.begin();
+       !taken_routing_table.empty() && it != taken_routing_table.end() &&
+       does_dv_have_row(it->first);
+       it++) {
+    if (new_distance_table[it->first][from] > EDGE_WEIGHT + it->second.cost)
+      new_distance_table[it->first][from] = EDGE_WEIGHT + it->second.cost;
+  }
+
+  distance_table = new_distance_table;
+  fill_routing_table();
+}
+
+bool Routing::does_dv_have_row(int row_key) {
+  return distance_table.count(row_key) != 0;
+}
+
+void update_nodes_info(
+    std::map<std::string, node_physical_info> taken_nodes_info) {
+  for (auto it = taken_nodes_info.begin();
+       !taken_nodes_info.empty() && it != taken_nodes_info.end(); it++) {
+    nodes_info[it->first] = it->second;
+  }
+}
+
 void Routing::send_routing_to_adj(Link link) {
   // link->send_data(&routing_table, );
   // cout <<"sending data to adj" << endl;
   // print_routing_table(routing_table);
-  while(true){
+  while (true) {
     for (auto it = adj_mapping.begin();
-        !adj_mapping.empty() && it != adj_mapping.end(); it++) {
+         !adj_mapping.empty() && it != adj_mapping.end(); it++) {
       link.send_routing_table(routing_table, "127.0.0.1", it->first);
       link.send_nodes_info(nodes_info, "127.0.0.1", it->first);
     }
@@ -90,9 +129,9 @@ void Routing::send_routing_to_adj(Link link) {
   }
 }
 
-void Routing::send_quit_to_adj(Link link){
+void Routing::send_quit_to_adj(Link link) {
   for (auto it = adj_mapping.begin();
-        !adj_mapping.empty() && it != adj_mapping.end(); it++) {
-      link.send_quit_msg("127.0.0.1", it->first);
-    }
+       !adj_mapping.empty() && it != adj_mapping.end(); it++) {
+    link.send_quit_msg("127.0.0.1", it->first);
+  }
 }
