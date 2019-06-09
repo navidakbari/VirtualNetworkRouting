@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
+#include <map>
 
 struct protocol_handler {
   int protocol_num;
