@@ -100,9 +100,7 @@ void send_cmd(const char *line){
 	return;
     }
     //TODO send
-    iphdr header;
-    header.protocol = IPPROTO_DATA;
-    link_layer->send_data(header , data , "127.0.0.1" , 5001);
+    link_layer->send_user_data(ip_string, data, routing);
 }
 
 struct {
@@ -126,7 +124,13 @@ void quit_msg_handler(std::string data, iphdr header){
 }
 
 void recv_data_handler(std::string data, iphdr header) {
-    std::cout << data << std::endl;
+    if(header.daddr == link_layer->get_self_port()){
+        std::cout << "---Node received packet!---" << endl;
+        std::cout << data << std::endl;
+        return;
+    }
+    
+    link_layer->forwarding(data, header, routing);
 }
 
 void recv_routing_table_handler(std::string data, iphdr header) {
