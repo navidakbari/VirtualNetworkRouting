@@ -27,6 +27,7 @@ void Link::send_routing_table(map<int, routing_table_info> routing_table,
   string r_string = serialize_routing_table(routing_table);
   iphdr header;
   header.protocol = IPPROTO_ROUTING_TABLE;
+  header.daddr = port;
   send_data(header, r_string, ip, port);
 }
 
@@ -36,6 +37,7 @@ void Link::send_nodes_info(
   string n_string = serialize_nodes_info(nodes_info);
   iphdr header;
   header.protocol = IPPROTO_NODES_INFO;
+  header.daddr = port;
   send_data(header, n_string, ip, port);
 }
 
@@ -43,6 +45,7 @@ void Link::send_quit_msg(std::string ip, int port) {
   string quit_msg = "QUIT";
   iphdr header;
   header.protocol = IPPROTO_QUIT_MSG;
+  header.daddr = port;
   send_data(header, quit_msg, ip, port);
 }
 
@@ -155,4 +158,44 @@ void Link::recv_data() {
 
 void Link::register_handler(protocol_handler handler) {
   handlers.push_back(handler);
+}
+
+int Link::get_self_port(){
+  return self_port;
+}
+
+void Link::send_user_data(std::string virtual_ip, std::string payload, Routing *routing){
+  struct sockaddr_in client_addr;
+  iphdr header;
+  header.protocol = IPPROTO_DATA;
+  client_addr.sin_family = AF_INET;
+  client_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  int des_port, next_hub_port;
+  //TODO: add dbg msg
+  if(routing->get_nodes_info().count(virtual_ip)){
+    des_port = routing->get_nodes_info()[virtual_ip].port;
+    header.daddr = des_port;
+  }else{
+    return;
+  }
+  cout << header.daddr << endl;
+  if(routing->get_routing_table().count(des_port)){
+    next_hub_port = routing->get_routing_table()[des_port].best_route_port;
+  }else{
+    return;
+  }
+
+  send_data(header , payload, "127.0.0.1", next_hub_port);
+}
+
+void Link::forwarding(std::string data, iphdr header, Routing *routing){
+  int next_hub_port;
+  
+  if(routing->get_routing_table().count(header.daddr)){
+    next_hub_port = routing->get_routing_table()[header.daddr].best_route_port;
+  }else{
+    return;
+  }
+
+  send_data(header, data, "127.0.0.1", next_hub_port);
 }

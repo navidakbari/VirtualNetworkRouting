@@ -73,7 +73,7 @@ void Routing::fill_nodes_info(lnxinfo_t *links_info) {
 
     node = node->next;
   }
-  print_nodes_map(nodes_info);
+  // print_nodes_map(nodes_info);
 }
 
 void Routing::fill_distance_table(lnxinfo_t *links_info) {
@@ -109,6 +109,11 @@ void Routing::fill_routing_table() {
     }
     routing_table[it->first] = min;
   }
+<<<<<<< HEAD
+=======
+  // print_routing_table(routing_table);
+  // print_creation_time(creation_time);
+>>>>>>> 52197b993d829336fcf3da247a2faef54243efc2
 }
 
 void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
@@ -181,7 +186,7 @@ void Routing::send_routing_to_adj(Link link) {
       link.send_routing_table(routing_table, "127.0.0.1", it->first);
       link.send_nodes_info(nodes_info, "127.0.0.1", it->first);
     }
-    sleep(1);
+    usleep(500000);
   }
 }
 
@@ -219,10 +224,22 @@ void Routing::delete_expired_nodes() {
       if (it->second + 3 < (long)time(0)) {
         creation_time.erase(it->first);
         delete_node(it->first);
+<<<<<<< HEAD
         cerr << "deleting node " << it->first << endl;
         // break;
+=======
+        // cerr << "deleting node " << it->first << endl;
+>>>>>>> 52197b993d829336fcf3da247a2faef54243efc2
       }
     }
     sleep(1);
   }
+}
+
+std::map<std::string, node_physical_info> Routing::get_nodes_info(){
+  return nodes_info;
+}
+
+std::map<int, routing_table_info> Routing::get_routing_table(){
+  return routing_table;
 }

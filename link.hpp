@@ -18,6 +18,8 @@
 #include <vector>
 #include <map>
 
+class Routing;
+
 struct protocol_handler {
   int protocol_num;
   void (*handler)(std::string, iphdr header);
@@ -39,6 +41,7 @@ private:
 
 public:
   Link(int port);
+  int get_self_port();
   int send_data(iphdr header, std::string data, std::string ip, int port);
   void recv_data();
   void
@@ -48,11 +51,13 @@ public:
   send_nodes_info(std::map<std::string, struct node_physical_info> nodes_info,
                   std::string ip, int port);
   void send_quit_msg(std::string ip, int port);
+  void send_user_data(std::string virtual_ip, std::string payload, Routing *routing);
   void register_handler(protocol_handler handler);
   static std::map<int, struct routing_table_info>
   deserialize_routing_table(std::string data);
   static std::map<std::string, struct node_physical_info>
   deserialize_nodes_info(std::string data);
+  void forwarding(std::string data, iphdr header, Routing *routing);
 };
 
 #endif
