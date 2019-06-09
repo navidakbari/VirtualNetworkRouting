@@ -10,6 +10,7 @@
 #include <string.h>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 #define _NORMAL_ "\x1b[0m"
 #define _BLACK_ "\x1b[30m"
@@ -72,4 +73,5 @@ void print_nodes_map(std::map<std::string, struct node_physical_info> m);
 void print_distance_table(std::map<int, std::map<int, int> > d);
 void print_routing_table(std::map<int, struct routing_table_info> r);
 void print_creation_time(std::map<int, long> c);
+void print_interfaces( std::vector<struct interface> interfaces);
 #endif

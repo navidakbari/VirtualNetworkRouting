@@ -28,6 +28,11 @@ struct routing_table_info {
   int cost;
 };
 
+struct interface {
+  std::string remote;
+  std::string local;
+};
+
 class Routing {
 private:
   // distance vector row and cols are phys_port;
@@ -35,6 +40,7 @@ private:
   std::map<int, routing_table_info> routing_table;
   std::map<std::string, node_physical_info> nodes_info;
   std::map<int, std::string> adj_mapping;
+  std::vector<interface> interfaces;
   std::map<int, long> creation_time;
   // std::vector<int> all_nodes;
   node_physical_info info;
@@ -42,6 +48,7 @@ private:
   void fill_nodes_info(lnxinfo_t *links_info);
   void fill_distance_table(lnxinfo_t *links_info);
   void fill_adj_mapping(lnxinfo_t *links_info);
+  void fill_interfaces(lnxinfo_t *links_info);
   void fill_routing_table();
   bool does_dv_have_row(int row_key);
 
@@ -55,6 +62,7 @@ public:
   void
   update_nodes_info(std::map<std::string, node_physical_info> taken_nodes_info);
   void delete_expired_nodes();
+  std::vector<interface> get_interfaces();
 };
 
 #endif
