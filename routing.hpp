@@ -31,6 +31,13 @@ struct routing_table_info {
 struct interface {
   std::string remote;
   std::string local;
+  int remote_port;
+};
+
+struct route {
+  std::string dst;
+  std::string loc;
+  int cost;
 };
 
 class Routing {
@@ -42,7 +49,6 @@ private:
   std::map<int, std::string> adj_mapping;
   std::vector<interface> interfaces;
   std::map<int, long> creation_time;
-  // std::vector<int> all_nodes;
   node_physical_info info;
 
   void fill_nodes_info(lnxinfo_t *links_info);
@@ -63,6 +69,7 @@ public:
   update_nodes_info(std::map<std::string, node_physical_info> taken_nodes_info);
   void delete_expired_nodes();
   std::vector<interface> get_interfaces();
+  std::vector<route> get_routes();
 };
 
 #endif
