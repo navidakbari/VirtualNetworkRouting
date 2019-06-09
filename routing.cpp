@@ -107,7 +107,7 @@ bool Routing::does_dv_have_row(int row_key) {
   return distance_table.count(row_key) != 0;
 }
 
-void update_nodes_info(
+void Routing::update_nodes_info(
     std::map<std::string, node_physical_info> taken_nodes_info) {
   for (auto it = taken_nodes_info.begin();
        !taken_nodes_info.empty() && it != taken_nodes_info.end(); it++) {
