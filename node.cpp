@@ -27,6 +27,7 @@
 std::thread sending_routing_table_thread;
 std::thread recv_routing_table_thread;
 Link *link_layer;
+Routing *routing;
 void help_cmd(const char *line) {
     (void) line;
 
@@ -117,8 +118,20 @@ struct {
   {"send", send_cmd}
 };
 
-void recv_data_handler(std::string data, iphdr header){
+void recv_data_handler(std::string data, iphdr header) {
     std::cout << data << std::endl;
+}
+
+void recv_routing_table_handler(std::string data, iphdr header) {
+    std::map<int, routing_table_info> routing_table =
+        Link::deserialize_routing_table(data);
+    routing->update_distance_table((int) header.saddr, routing_table);
+}
+
+void recv_nodes_info_handler(std::string data, iphdr header) {
+    std::map<std::string, node_physical_info> nodes_info = 
+        Link::deserialize_nodes_info(data);
+    routing->update_nodes_info(nodes_info);
 }
 
 struct protocol_handler get_handler(void (*f)(std::string,iphdr) , int protocol){
@@ -149,9 +162,11 @@ int main(int argc, char **argv){
     //TODO Initialize your layers!
     lnxinfo_t *links_info = parse_links(argv[1]);
     link_layer = new Link(links_info->local_phys_port);
-    Routing *routing = new Routing(links_info);
+    routing = new Routing(links_info);
 
     link_layer->register_handler(get_handler(&recv_data_handler , IPPROTO_DATA));
+    link_layer->register_handler(get_handler(&recv_routing_table_handler, IPPROTO_ROUTING_TABLE));
+    link_layer->register_handler(get_handler(&recv_nodes_info_handler, IPPROTO_NODES_INFO));
 
     std::thread sending_routing_table_thread(&Routing::send_routing_to_adj, routing, *link_layer);
     std::thread recv_routing_table_thread(&Link::recv_data, link_layer);

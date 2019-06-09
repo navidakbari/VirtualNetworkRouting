@@ -27,15 +27,12 @@ private:
   /* data */
   struct sockaddr_in address;
   int sockfd;
-  std::vector< protocol_handler > handlers;
+  std::vector<protocol_handler> handlers;
   std::string serialize_routing_table(
       std::map<int, struct routing_table_info> routing_table);
   std::string serialize_nodes_info(
       std::map<std::string, struct node_physical_info> nodes_info);
-  std::map<int, struct routing_table_info>
-  deserialize_routing_table(std::string data);
-  std::map<std::string, struct node_physical_info>
-  deserialize_nodes_info(std::string data);
+
   std::vector<std::string> tokenize(const std::string &str, char delim);
 
 public:
@@ -50,6 +47,10 @@ public:
                   std::string ip, int port);
   void send_quit_msg(std::string ip, int port);
   void register_handler(protocol_handler handler);
+  static std::map<int, struct routing_table_info>
+  deserialize_routing_table(std::string data);
+  static std::map<std::string, struct node_physical_info>
+  deserialize_nodes_info(std::string data);
 };
 
 #endif
