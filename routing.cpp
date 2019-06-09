@@ -8,8 +8,8 @@ Routing::Routing(lnxinfo_t *links_info) {
 
   fill_nodes_info(links_info);
   fill_adj_mapping(links_info);
-  fill_distance_table(links_info);
-  fill_routing_table();
+  // fill_distance_table(links_info);
+  // fill_routing_table();
 
   // for (auto it = distance_table.begin();
   //      !distance_table.empty() && distance_table.end() != it; it++) {
@@ -85,11 +85,20 @@ void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
 void Routing::update_distance_table(
     int from, std::map<int, routing_table_info> taken_routing_table) {
   std::map<int, std::map<int, int>> new_distance_table = distance_table;
-  creation_time[from] = (long) time(0);
+  creation_time[from] = (long)time(0);
+
+  map<int, int> row;
+  for (auto it = adj_mapping.begin();
+       !adj_mapping.empty() && it != adj_mapping.end(); it++)
+    row[it->first] = INFINITY;
+  row[from] = 1;
+  new_distance_table[from] = row;
+
   for (auto it = taken_routing_table.begin();
        !taken_routing_table.empty() && it != taken_routing_table.end(); it++) {
     if (it->first == info.port || it->second.best_route_port == info.port)
       continue;
+    
     if (!does_dv_have_row(it->first)) {
       // first recognize new rows
       map<int, int> row;
@@ -98,13 +107,13 @@ void Routing::update_distance_table(
         row[it->first] = INFINITY;
       row[from] = EDGE_WEIGHT + it->second.cost;
       new_distance_table[it->first] = row;
-      creation_time[it->first] = (long) time(0);
+      creation_time[it->first] = (long)time(0);
     } else {
       // second update existing rows
       if (new_distance_table[it->first][from] > EDGE_WEIGHT + it->second.cost) {
+        creation_time[it->first] = (long)time(0);
         new_distance_table[it->first][from] = EDGE_WEIGHT + it->second.cost;
       }
-      creation_time[it->first] = (long) time(0);
     }
   }
 
@@ -162,15 +171,18 @@ void Routing::delete_node(int port) {
       nodes_info.erase(it);
   }
 
-  adj_mapping.erase(port);
+  // adj_mapping.erase(port);
 }
 
-void Routing::delete_expired_nodes(){
-  while(true){
-    for(auto it = creation_time.begin(); !creation_time.empty() && it != creation_time.end(); it++){
-      if(it->second + 3 > (long)time(0)){
+void Routing::delete_expired_nodes() {
+  while (true) {
+    
+    for (auto it = creation_time.begin();
+         !creation_time.empty() && it != creation_time.end(); it++) {
+      if (it->second + 3 < (long)time(0)) {
         creation_time.erase(it->first);
         delete_node(it->first);
+        cerr << "deleting node " << it->first << endl;
       }
     }
     sleep(1);
