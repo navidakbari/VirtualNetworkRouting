@@ -27,7 +27,7 @@ private:
   /* data */
   struct sockaddr_in address;
   int sockfd;
-  std::vector<protocol_handler> handlers;
+  std::vector< protocol_handler > handlers;
   std::string serialize_routing_table(
       std::map<int, struct routing_table_info> routing_table);
   std::string serialize_nodes_info(

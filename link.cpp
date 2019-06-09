@@ -104,6 +104,7 @@ map<string, node_physical_info> Link::deserialize_nodes_info(string data) {
   return m;
 }
 
+
 int Link::send_data(iphdr header, string data, string ip, int port) {
   struct sockaddr_in client_addr;
 
@@ -145,7 +146,7 @@ void Link::recv_data() {
     string rec_data_str = rec_data;
 
     // cout << "header : " << (int) rec_header.protocol << endl << rec_data_str << endl;
-
+    // cout << handlers.size() << endl;
     for (unsigned int i = 0; i < handlers.size(); i++) {
       if (handlers[i].protocol_num == rec_header.protocol) {
         handlers[i].handler(rec_data_str, rec_header);

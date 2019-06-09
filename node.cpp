@@ -12,6 +12,7 @@
 #include <thread>
 #include <functional>
 #include "link.hpp"
+#include "ip.hpp"
 
 #ifdef READLINE
 #include <readline/readline.h>
@@ -25,7 +26,7 @@
 
 std::thread sending_routing_table_thread;
 std::thread recv_routing_table_thread;
-
+Link *link_layer;
 void help_cmd(const char *line) {
     (void) line;
 
@@ -96,7 +97,9 @@ void send_cmd(const char *line){
 	return;
     }
     //TODO send
-    dbg(DBG_ERROR, "send_cmd: NOT YET IMPLEMENTED\n");
+    iphdr header;
+    header.protocol = IPPROTO_DATA;
+    link_layer->send_data(header , data , "127.0.0.1" , 5001);
 }
 
 struct {
@@ -113,6 +116,17 @@ struct {
   {"up", up_cmd},
   {"send", send_cmd}
 };
+
+void recv_data_handler(std::string data, iphdr header){
+    std::cout << data << std::endl;
+}
+
+struct protocol_handler get_handler(void (*f)(std::string,iphdr) , int protocol){
+    struct protocol_handler temp;
+    temp.protocol_num = protocol;
+    temp.handler = f;
+    return temp;
+}
 
 
 int main(int argc, char **argv){
@@ -134,8 +148,10 @@ int main(int argc, char **argv){
 
     //TODO Initialize your layers!
     lnxinfo_t *links_info = parse_links(argv[1]);
-    Link *link_layer = new Link(links_info->local_phys_port);
+    link_layer = new Link(links_info->local_phys_port);
     Routing *routing = new Routing(links_info);
+
+    link_layer->register_handler(get_handler(&recv_data_handler , IPPROTO_DATA));
 
     std::thread sending_routing_table_thread(&Routing::send_routing_to_adj, routing, *link_layer);
     std::thread recv_routing_table_thread(&Link::recv_data, link_layer);
