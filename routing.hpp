@@ -47,8 +47,8 @@ public:
   Routing(lnxinfo_t *links_info);
   void send_routing_to_adj(Link link);
   void send_quit_to_adj(Link link);
-  void
-  update_distance_table(int from,
+  void delete_node(int port);
+  void update_distance_table(int from,
                         std::map<int, routing_table_info> taken_routing_table);
   void
   update_nodes_info(std::map<std::string, node_physical_info> taken_nodes_info);

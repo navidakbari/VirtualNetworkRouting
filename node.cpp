@@ -119,6 +119,11 @@ struct {
   {"send", send_cmd}
 };
 
+
+void quit_msg_handler(std::string data, iphdr header){
+    routing->delete_node(header.saddr);
+}
+
 void recv_data_handler(std::string data, iphdr header) {
     std::cout << data << std::endl;
 }
