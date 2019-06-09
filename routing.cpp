@@ -78,26 +78,24 @@ void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
 
 void Routing::update_distance_table(
     int from, std::map<int, routing_table_info> taken_routing_table) {
-  std::map<int, std::map<int, int>> new_distance_table;
-  // first recognize new rows
+  std::map<int, std::map<int, int>> new_distance_table = distance_table;
   for (auto it = taken_routing_table.begin();
-       !taken_routing_table.empty() && it != taken_routing_table.end() &&
-       !does_dv_have_row(it->first);
-       it++) {
-    map<int, int> row;
-    for (auto it = adj_mapping.begin(); it != adj_mapping.end(); it++)
-      row[it->first] = INFINITY;
-    row[from] = EDGE_WEIGHT + it->second.cost;
-    new_distance_table[it->first] = row;
-  }
-  
-  // second update existing rows
-  for (auto it = taken_routing_table.begin();
-       !taken_routing_table.empty() && it != taken_routing_table.end() &&
-       does_dv_have_row(it->first);
-       it++) {
-    if (new_distance_table[it->first][from] > EDGE_WEIGHT + it->second.cost)
-      new_distance_table[it->first][from] = EDGE_WEIGHT + it->second.cost;
+       !taken_routing_table.empty() && it != taken_routing_table.end(); it++) {
+    if (it->first == info.port)
+      continue;
+    if (!does_dv_have_row(it->first)) {
+      // first recognize new rows
+      map<int, int> row;
+      for (auto it = adj_mapping.begin();
+      !adj_mapping.empty() && it != adj_mapping.end(); it++)
+        row[it->first] = INFINITY;
+      row[from] = EDGE_WEIGHT + it->second.cost;
+      new_distance_table[it->first] = row;
+    } else {
+      // second update existing rows
+      if (new_distance_table[it->first][from] > EDGE_WEIGHT + it->second.cost)
+        new_distance_table[it->first][from] = EDGE_WEIGHT + it->second.cost;
+    }
   }
 
   distance_table = new_distance_table;

@@ -27,6 +27,7 @@ class Link {
 private:
   /* data */
   struct sockaddr_in address;
+  int self_port;
   int sockfd;
   std::vector<protocol_handler> handlers;
   std::string serialize_routing_table(
