@@ -39,7 +39,7 @@ void Link::send_nodes_info(
   send_data(header, n_string, ip, port);
 }
 
-void Link::send_quit_msg(std::string ip, int port){
+void Link::send_quit_msg(std::string ip, int port) {
   string quit_msg = "QUIT";
   iphdr header;
   header.protocol = IPPROTO_QUIT_MSG;
@@ -104,7 +104,6 @@ map<string, node_physical_info> Link::deserialize_nodes_info(string data) {
   return m;
 }
 
-
 int Link::send_data(iphdr header, string data, string ip, int port) {
   struct sockaddr_in client_addr;
   header.saddr = self_port;
@@ -114,27 +113,23 @@ int Link::send_data(iphdr header, string data, string ip, int port) {
   client_addr.sin_port = htons(port);
 
   char *toSend;
-  toSend = (char *) malloc(sizeof(iphdr) + data.size() + 1);
+  toSend = (char *)malloc(sizeof(iphdr) + data.size() + 1);
   memcpy(toSend, (char *)&header, sizeof(iphdr));
   memcpy(toSend + sizeof(iphdr), data.c_str(), data.size() + 1);
   // TODO: Send data more than buffer
-  
+
   int size = sendto(sockfd, toSend, sizeof(iphdr) + data.size() + 1, 0,
                     (const struct sockaddr *)&client_addr, sizeof(client_addr));
   return size;
 }
 
 void Link::recv_data() {
-  while(true){
-    struct sockaddr_in client_addr;
-    memset(&client_addr, 0, sizeof(client_addr)); 
-
+  while (true) {
     char buffer[1400];
     int size;
     unsigned int len;
-    size = recvfrom(sockfd, (char *)buffer, 1400, 0,
-                    (struct sockaddr *)&client_addr, &len);
-    // cerr << size << endl;
+
+    size = recvfrom(sockfd, (char *)buffer, 1200, 0, NULL, 0);
     // TODO: recive data more than buffer
 
     iphdr rec_header;
@@ -142,18 +137,19 @@ void Link::recv_data() {
 
     memcpy(&rec_header, buffer, sizeof(iphdr));
     memcpy(rec_data, buffer + sizeof(iphdr), size - sizeof(iphdr));
-    rec_data[size + 1 - sizeof(iphdr)] = '/0';
 
     string rec_data_str = rec_data;
 
-    // cout << "header : " << (int) rec_header.protocol << endl << rec_data_str << endl;
+    // cout << "header : " << (int)rec_header.protocol << endl;
+    // << rec_data_str << endl;
     // cout << rec_header.saddr << endl;
     for (unsigned int i = 0; i < handlers.size(); i++) {
-      if (handlers[i].protocol_num == rec_header.protocol) {
+      if (handlers[i].protocol_num == (int) rec_header.protocol) {
         handlers[i].handler(rec_data_str, rec_header);
         break;
       }
     }
+    free(rec_data);
   }
 }
 
