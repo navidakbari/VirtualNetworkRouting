@@ -267,6 +267,7 @@ struct ip_timestamp
 #define IPPROTO_NODES_INFO 201
 #define IPPROTO_QUIT_MSG 202
 #define IPPROTO_DATA 0
+#define IPPROTO_TRACEROUTE 205
 
 __END_DECLS
 

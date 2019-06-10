@@ -30,6 +30,8 @@ std::thread recv_routing_table_thread;
 std::thread delete_expired_nodes_thread;
 Link *link_layer;
 Routing *routing;
+bool traceroute = false;
+vector <string> traceroute_host;
 void help_cmd(const char *line) {
     (void) line;
 
@@ -98,9 +100,30 @@ void send_cmd(const char *line){
 	return;
     }
     //TODO send
-    link_layer->send_user_data(ip_string, data, routing);
+    link_layer->send_user_data(ip_string, data, routing, IPPROTO_DATA);
 }
 
+void traceroute_cmd(const char *line){
+    char ip_string[INET_ADDRSTRLEN];
+    struct in_addr ip_addr;
+    if (sscanf(line, "traceroute %s", ip_string) != 1) {
+	    dbg(DBG_ERROR, "syntax error (usage: traceroute [ip])\n");
+	    return;
+    }
+    
+    if (inet_pton(AF_INET, ip_string, &ip_addr) == 0) {
+	dbg(DBG_ERROR, "syntax error (malformed ip address)\n");
+	return;
+    }
+    string vaddr = routing->get_adj_mapping()[routing->get_routing_table()[routing->get_nodes_info()[ip_string].port].best_route_port];
+    string tracemsg = "Traceroute from " + vaddr + " to " + ip_string;
+
+    traceroute = true;
+    traceroute_host.push_back(tracemsg);
+    traceroute_host.push_back(vaddr);
+    link_layer->send_user_data(ip_string, "traceroute", routing, IPPROTO_TRACEROUTE);
+
+}
 struct {
   const char *command;
   void (*handler)(const char *);
@@ -113,7 +136,8 @@ struct {
   {"lr", routes_cmd},
   {"down", down_cmd},
   {"up", up_cmd},
-  {"send", send_cmd}
+  {"send", send_cmd},
+  {"traceroute", traceroute_cmd}
 };
 
 
@@ -134,7 +158,7 @@ void recv_data_handler(std::string data, iphdr header) {
         return;
     }
     
-    link_layer->forwarding(data, header, routing);
+    link_layer->forwarding(data, header, routing, IPPROTO_DATA);
 }
 
 void recv_routing_table_handler(std::string data, iphdr header) {
@@ -148,6 +172,30 @@ void recv_nodes_info_handler(std::string data, iphdr header) {
     std::map<std::string, node_physical_info> nodes_info = 
         Link::deserialize_nodes_info(data);
     routing->update_nodes_info(nodes_info);
+}
+
+void recv_traceroute_msg(std::string data, iphdr header){
+    
+    if(traceroute && header.daddr == link_layer->get_self_port()){
+        traceroute_host.push_back(header.sourceIP);
+        if(data == "traceroute finished"){
+            cout << traceroute_host[0] << endl;
+            for(int i = 1; i < traceroute_host.size(); i++){
+                cout << i << " " << traceroute_host[i] << endl;
+            }
+            cout << "Traceroute finished in " << traceroute_host.size() << " hobs" << endl;
+            traceroute = false;
+            traceroute_host.clear();
+        }
+        return;
+    }
+    if((header.daddr == link_layer->get_self_port())){
+        link_layer->send_user_data(header.sourceIP,"traceroute finished",routing, IPPROTO_TRACEROUTE);
+    }else{
+        link_layer->send_user_data(header.sourceIP,"traceroute",routing, IPPROTO_TRACEROUTE);
+        link_layer->forwarding(data, header, routing, IPPROTO_TRACEROUTE);
+    }
+    
 }
 
 struct protocol_handler get_handler(void (*f)(std::string,iphdr) , int protocol){
@@ -184,6 +232,7 @@ int main(int argc, char **argv){
     link_layer->register_handler(get_handler(&recv_routing_table_handler, IPPROTO_ROUTING_TABLE));
     link_layer->register_handler(get_handler(&recv_nodes_info_handler, IPPROTO_NODES_INFO));
     link_layer->register_handler(get_handler(&quit_msg_handler, IPPROTO_QUIT_MSG));
+    link_layer->register_handler(get_handler(&recv_traceroute_msg, IPPROTO_TRACEROUTE));
 
     std::thread sending_routing_table_thread(&Routing::send_routing_to_adj, routing, *link_layer);
     std::thread recv_routing_table_thread(&Link::recv_data, link_layer);
@@ -228,7 +277,6 @@ int main(int argc, char **argv){
 	free(line);
 #endif
     }
-
 
     //TODO Clean up your layers!
     sending_routing_table_thread.detach();
