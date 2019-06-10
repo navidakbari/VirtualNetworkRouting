@@ -122,8 +122,23 @@ int Link::send_data(iphdr header, string data, string ip, int port) {
   toSend = (char *)malloc(sizeof(iphdr) + data.size() + 1);
   memcpy(toSend, (char *)&header, sizeof(iphdr));
   memcpy(toSend + sizeof(iphdr), data.c_str(), data.size() + 1);
-  // TODO: Send data more than buffer
 
+
+  int data_lenght = sizeof(iphdr) + data.size() + 1;
+
+  if(data_lenght > 1400){
+    std::string dataString = std::string(toSend, toSend + data_lenght);
+    vector<std::string> data_chunk;
+    for(int i = 0 ; i < data_lenght ; i += 1400){
+      data_chunk.push_back(dataString.substr(i, ((data_lenght - 1400*i)>1400 ? 1400 : (data_lenght - 1400*i))));
+    }
+    int size;
+    for(int i = 0 ; i < data_chunk.size(); i++){
+      size += sendto(sockfd, toSend, sizeof(iphdr) + data.size() + 1, 0,
+                    (const struct sockaddr *)&client_addr, sizeof(client_addr));
+    }
+    return size;
+  }
   int size = sendto(sockfd, toSend, sizeof(iphdr) + data.size() + 1, 0,
                     (const struct sockaddr *)&client_addr, sizeof(client_addr));
   return size;
@@ -131,12 +146,14 @@ int Link::send_data(iphdr header, string data, string ip, int port) {
 
 void Link::recv_data() {
   while (true) {
-    char buffer[1400];
-    int size;
+    char buffer[64000];
+    int size, recv_len;
     unsigned int len;
+    bool data_exists = true;
+    recv_len = recvfrom(sockfd, (char *)buffer, 64000, 0, NULL, 0);
+    size += recv_len;
+    cout << "recv : " << recv_len << endl;
 
-    size = recvfrom(sockfd, (char *)buffer, 1200, 0, NULL, 0);
-    // TODO: recive data more than buffer
 
     iphdr rec_header;
     char *rec_data = (char *)malloc(size + 1 - sizeof(iphdr));
@@ -146,9 +163,14 @@ void Link::recv_data() {
 
     string rec_data_str = rec_data;
 
-    // cout << "header : " << (int)rec_header.protocol << endl;
-    // << rec_data_str << endl;
-    // cout << rec_header.saddr << endl;
+
+    if(recv_len >= 1400){
+      while(recv_len >= 1400){
+        recv_len = recvfrom(sockfd, (char *)buffer + size, 64000, 0, NULL, 0);
+        cout << "recv : " << recv_len << endl;
+      }
+    }
+
     for (unsigned int i = 0; i < handlers.size(); i++) {
       if (handlers[i].protocol_num == (int) rec_header.protocol) {
         handlers[i].handler(rec_data_str, rec_header);
