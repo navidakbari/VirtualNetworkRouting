@@ -219,7 +219,7 @@ void Routing::delete_expired_nodes() {
       if (it->second + 3 < (long)time(0)) {
         creation_time.erase(it->first);
         delete_node(it->first);
-        cerr << "deleting node " << it->first << endl;
+        // cerr << "deleting node " << it->first << endl;
         // break;
       }
     }

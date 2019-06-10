@@ -167,10 +167,10 @@ int Link::get_self_port(){
   return self_port;
 }
 
-void Link::send_user_data(std::string virtual_ip, std::string payload, Routing *routing){
+void Link::send_user_data(std::string virtual_ip, std::string payload, Routing *routing, int protocol){
   struct sockaddr_in client_addr;
   iphdr header;
-  header.protocol = IPPROTO_DATA;
+  header.protocol = protocol;
   strcpy(header.desIP, virtual_ip.c_str());
   client_addr.sin_family = AF_INET;
   client_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -195,9 +195,9 @@ void Link::send_user_data(std::string virtual_ip, std::string payload, Routing *
   send_data(header , payload, "127.0.0.1", next_hub_port);
 }
 
-void Link::forwarding(std::string data, iphdr header, Routing *routing){
+void Link::forwarding(std::string data, iphdr header, Routing *routing, int protocol){
   int next_hub_port;
-  header.protocol = IPPROTO_DATA;
+  header.protocol = protocol;
   if(routing->get_routing_table().count(header.daddr)){
     next_hub_port = routing->get_routing_table()[header.daddr].best_route_port;
   }else{
