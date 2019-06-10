@@ -41,8 +41,7 @@ std::vector<route> Routing::get_routes() {
   vector<route> routes;
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && nodes_info.end() != it; it++) {
-    if(routing_table.count(it->second.port) == 0)
-      continue;
+    
     route new_route;
     if (it->second.port == info.port) {
       new_route.cost = 0;
@@ -51,6 +50,8 @@ std::vector<route> Routing::get_routes() {
       routes.push_back(new_route);
       continue;
     }
+    if(routing_table.count(it->second.port) == 0)
+      continue;
 
     new_route.cost = routing_table[it->second.port].cost;
     new_route.dst = it->first;
@@ -225,7 +226,6 @@ void Routing::delete_node(int port) {
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && it != nodes_info.end(); it++) {
     if (it->second.port != port){
-      cerr << "add " << it->first << endl;
       new_nodes_info[it->first] = it->second;
     }
   }
