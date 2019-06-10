@@ -74,4 +74,5 @@ void print_distance_table(std::map<int, std::map<int, int> > d);
 void print_routing_table(std::map<int, struct routing_table_info> r);
 void print_creation_time(std::map<int, long> c);
 void print_interfaces( std::vector<struct interface> interfaces);
+void print_routes(std::vector<struct route> routes);
 #endif

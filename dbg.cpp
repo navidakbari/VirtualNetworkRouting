@@ -121,3 +121,15 @@ void print_interfaces(std::vector<interface> interfaces) {
          << interfaces[i].local << endl;
   }
 }
+
+void print_routes(std::vector<struct route> routes) {
+  cout << "cost"
+       << "     "
+       << "dst"
+       << "               "
+       << "loc" << endl;
+  for (int i = 0; i < routes.size(); i++) {
+    cout << routes[i].cost << "     " << routes[i].dst << "       "
+         << routes[i].loc << endl;
+  }
+}

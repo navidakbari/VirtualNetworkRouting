@@ -26,13 +26,36 @@ void Routing::fill_interfaces(lnxinfo_t *links_info) {
     interface new_interface;
     new_interface.local = inet_ntoa(node->local_virt_ip);
     new_interface.remote = inet_ntoa(node->remote_virt_ip);
+    new_interface.remote_port = (int)node->remote_phys_port;
     interfaces.push_back(new_interface);
     node = node->next;
   }
 }
 
-std::vector<interface> Routing::get_interfaces() {
-  return interfaces;
+std::vector<interface> Routing::get_interfaces() { return interfaces; }
+
+std::vector<route> Routing::get_routes() {
+  print_routing_table(routing_table);
+  print_distance_table(distance_table);
+  vector<route> routes;
+  for (auto it = nodes_info.begin();
+       !nodes_info.empty() && nodes_info.end() != it; it++) {
+    route new_route;
+    if (it->second.port == info.port) {
+      new_route.cost = 0;
+      new_route.dst = it->first;
+      new_route.loc = it->first;
+      routes.push_back(new_route);
+      continue;
+    }
+
+    new_route.cost = routing_table[it->second.port].cost;
+    new_route.dst = it->first;
+    new_route.loc = adj_mapping[routing_table[it->second.port].best_route_port];
+    
+    routes.push_back(new_route);
+  }
+  return routes;
 }
 
 void Routing::fill_nodes_info(lnxinfo_t *links_info) {
@@ -43,10 +66,10 @@ void Routing::fill_nodes_info(lnxinfo_t *links_info) {
     node_info.port = info.port;
     nodes_info[inet_ntoa(node->local_virt_ip)] = node_info;
 
-    node_physical_info node_info_dst;
-    node_info_dst.phys_ip = node->remote_phys_host;
-    node_info_dst.port = node->remote_phys_port;
-    nodes_info[inet_ntoa(node->remote_virt_ip)] = node_info_dst;
+    // node_physical_info node_info_dst;
+    // node_info_dst.phys_ip = node->remote_phys_host;
+    // node_info_dst.port = node->remote_phys_port;
+    // nodes_info[inet_ntoa(node->remote_virt_ip)] = node_info_dst;
 
     node = node->next;
   }
@@ -86,8 +109,6 @@ void Routing::fill_routing_table() {
     }
     routing_table[it->first] = min;
   }
-  // print_routing_table(routing_table);
-  // print_creation_time(creation_time);
 }
 
 void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
@@ -114,7 +135,7 @@ void Routing::update_distance_table(
        !taken_routing_table.empty() && it != taken_routing_table.end(); it++) {
     if (it->first == info.port || it->second.best_route_port == info.port)
       continue;
-    
+
     if (!does_dv_have_row(it->first)) {
       // first recognize new rows
       map<int, int> row;
@@ -192,13 +213,14 @@ void Routing::delete_node(int port) {
 
 void Routing::delete_expired_nodes() {
   while (true) {
-    
+
     for (auto it = creation_time.begin();
          !creation_time.empty() && it != creation_time.end(); it++) {
       if (it->second + 3 < (long)time(0)) {
         creation_time.erase(it->first);
         delete_node(it->first);
-        // cerr << "deleting node " << it->first << endl;
+        cerr << "deleting node " << it->first << endl;
+        // break;
       }
     }
     sleep(1);

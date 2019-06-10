@@ -44,15 +44,12 @@ void help_cmd(const char *line) {
 
 void interfaces_cmd(const char *line){
     (void) line;
-    //TODO interfaces
     print_interfaces(routing->get_interfaces());
-    // dbg(DBG_ERROR, "interfaces_cmd: NOT YET IMPLEMENTED\n");
 }
 
 void routes_cmd(const char *line){
     (void) line;
-    //TODO routes
-    dbg(DBG_ERROR, "routes_cmd: NOT YET IMPLEMENTED\n");
+    print_routes(routing->get_routes());
 }
 
 void down_cmd(const char *line){
