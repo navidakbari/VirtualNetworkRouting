@@ -74,6 +74,7 @@ public:
   std::map<std::string, node_physical_info> get_nodes_info();
   std::map<int, routing_table_info> get_routing_table();
   std::vector<interface> get_interfaces();
+  std::map<int, std::string> get_adj_mapping();
   std::vector<route> get_routes();
 };
 

@@ -43,6 +43,9 @@ struct iphdr
     u_int16_t check;
     u_int32_t saddr;
     u_int32_t daddr;
+    u_int32_t lhaddr;
+    char desIP[INET_ADDRSTRLEN];
+    char sourceIP[INET_ADDRSTRLEN];
     /*The options start here. */
   };
 

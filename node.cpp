@@ -123,8 +123,14 @@ void quit_msg_handler(std::string data, iphdr header){
 
 void recv_data_handler(std::string data, iphdr header) {
     if(header.daddr == link_layer->get_self_port()){
-        std::cout << "---Node received packet!---" << endl;
-        std::cout << data << std::endl;
+        std::cout << "------Node received packet!------\n" << endl;
+        std::cout << "\t arrived link: \t\t" << link_layer->get_arrived_interface(header.lhaddr, routing) << endl;
+        std::cout << "\t source IP: \t\t"  << header.sourceIP  << endl;
+        std::cout << "\t destination IP: \t" << header.desIP << endl;
+        std::cout << "\t protocol: \t\t" << (int)header.protocol <<endl;
+        std::cout << "\t payload length: \t" << data.length() << endl;
+        std::cout << "\t payload: \t\t" << data <<endl;
+        std::cout << "---------------------------" << endl;
         return;
     }
     

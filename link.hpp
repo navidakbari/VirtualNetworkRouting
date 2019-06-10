@@ -58,6 +58,7 @@ public:
   static std::map<std::string, struct node_physical_info>
   deserialize_nodes_info(std::string data);
   void forwarding(std::string data, iphdr header, Routing *routing);
+  int get_arrived_interface(int last_hub, Routing *routing);
 };
 
 #endif
