@@ -36,8 +36,8 @@ void Routing::fill_interfaces(lnxinfo_t *links_info) {
 std::vector<interface> Routing::get_interfaces() { return interfaces; }
 
 std::vector<route> Routing::get_routes() {
-  print_routing_table(routing_table);
-  print_distance_table(distance_table);
+  // print_routing_table(routing_table);
+  // print_distance_table(distance_table);
   vector<route> routes;
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && nodes_info.end() != it; it++) {
@@ -169,8 +169,8 @@ void Routing::update_distance_table(
   sem_post(&dt_sem);
   fill_routing_table();
 
-  print_routing_table(routing_table);
-  print_creation_time(creation_time);
+  // print_routing_table(routing_table);
+  // print_creation_time(creation_time);
 }
 
 bool Routing::does_dv_have_row(int row_key) {

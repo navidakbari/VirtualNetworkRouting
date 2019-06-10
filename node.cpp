@@ -116,9 +116,10 @@ void traceroute_cmd(const char *line){
 	return;
     }
     string vaddr = routing->get_adj_mapping()[routing->get_routing_table()[routing->get_nodes_info()[ip_string].port].best_route_port];
-    std::cout << "Traceroute from " << vaddr << " to " << ip_string << std::endl;
+    string tracemsg = "Traceroute from " + vaddr + " to " + ip_string;
 
     traceroute = true;
+    traceroute_host.push_back(tracemsg);
     traceroute_host.push_back(vaddr);
     link_layer->send_user_data(ip_string, "traceroute", routing, IPPROTO_TRACEROUTE);
 
@@ -178,8 +179,9 @@ void recv_traceroute_msg(std::string data, iphdr header){
     if(traceroute && header.daddr == link_layer->get_self_port()){
         traceroute_host.push_back(header.sourceIP);
         if(data == "traceroute finished"){
-            for(int i = 0; i < traceroute_host.size(); i++){
-                cout << i+1 << " " << traceroute_host[i] << endl;
+            cout << traceroute_host[0] << endl;
+            for(int i = 1; i < traceroute_host.size(); i++){
+                cout << i << " " << traceroute_host[i] << endl;
             }
             cout << "Traceroute finished in " << traceroute_host.size() << " hobs" << endl;
             traceroute = false;
