@@ -17,7 +17,8 @@ Routing::Routing(lnxinfo_t *links_info) {
   //   creation_time[it->first] = (long) time(0);
   // }
 
-  lnxbody_t *node = links_info->body;
+  sem_init(&dt_sem, 0, 1);
+  sem_init(&rt_sem, 0, 1);
 }
 
 void Routing::fill_interfaces(lnxinfo_t *links_info) {
@@ -52,7 +53,7 @@ std::vector<route> Routing::get_routes() {
     new_route.cost = routing_table[it->second.port].cost;
     new_route.dst = it->first;
     new_route.loc = adj_mapping[routing_table[it->second.port].best_route_port];
-    
+
     routes.push_back(new_route);
   }
   return routes;
@@ -96,6 +97,7 @@ void Routing::fill_distance_table(lnxinfo_t *links_info) {
 }
 
 void Routing::fill_routing_table() {
+  sem_wait(&rt_sem);
   for (auto it = distance_table.begin();
        !distance_table.empty() && it != distance_table.end(); it++) {
     map<int, int> row = it->second;
@@ -109,6 +111,9 @@ void Routing::fill_routing_table() {
     }
     routing_table[it->first] = min;
   }
+  sem_post(&rt_sem);
+  // print_routing_table(routing_table);
+  // print_creation_time(creation_time);
 }
 
 void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
@@ -122,14 +127,16 @@ void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
 void Routing::update_distance_table(
     int from, std::map<int, routing_table_info> taken_routing_table) {
   std::map<int, std::map<int, int>> new_distance_table = distance_table;
-  creation_time[from] = (long)time(0);
-
+  sem_wait(&dt_sem);
   map<int, int> row;
   for (auto it = adj_mapping.begin();
        !adj_mapping.empty() && it != adj_mapping.end(); it++)
     row[it->first] = INFINITY;
   row[from] = 1;
   new_distance_table[from] = row;
+  if (routing_table[from].cost <= 1 || routing_table.count(from) < 1) {
+    creation_time[from] = (long)time(0);
+  }
 
   for (auto it = taken_routing_table.begin();
        !taken_routing_table.empty() && it != taken_routing_table.end(); it++) {
@@ -147,20 +154,27 @@ void Routing::update_distance_table(
       creation_time[it->first] = (long)time(0);
     } else {
       // second update existing rows
-      if (new_distance_table[it->first][from] > EDGE_WEIGHT + it->second.cost) {
+      if (new_distance_table[it->first][from] > EDGE_WEIGHT +
+      it->second.cost) {
         creation_time[it->first] = (long)time(0);
         new_distance_table[it->first][from] = EDGE_WEIGHT + it->second.cost;
+      }
+      if (routing_table[it->first].cost >= EDGE_WEIGHT + it->second.cost) {
+        creation_time[it->first] = (long)time(0);
       }
     }
   }
 
   distance_table = new_distance_table;
-  // print_distance_table(distance_table);
+  sem_post(&dt_sem);
   fill_routing_table();
+
+  print_routing_table(routing_table);
+  print_creation_time(creation_time);
 }
 
 bool Routing::does_dv_have_row(int row_key) {
-  return distance_table.count(row_key) != 0;
+  return routing_table.count(row_key) != 0;
 }
 
 void Routing::update_nodes_info(
@@ -193,14 +207,17 @@ void Routing::send_quit_to_adj(Link link) {
 }
 
 void Routing::delete_node(int port) {
+  sem_wait(&dt_sem);
   distance_table.erase(port);
 
   for (auto it = distance_table.begin();
        !distance_table.empty() && it != distance_table.end(); it++) {
     it->second.erase(port);
   }
-
+  sem_post(&dt_sem);
+  sem_wait(&rt_sem);
   routing_table.erase(port);
+  sem_post(&rt_sem);
 
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && it != nodes_info.end(); it++) {
@@ -227,11 +244,11 @@ void Routing::delete_expired_nodes() {
   }
 }
 
-std::map<std::string, node_physical_info> Routing::get_nodes_info(){
+std::map<std::string, node_physical_info> Routing::get_nodes_info() {
   return nodes_info;
 }
 
-std::map<int, routing_table_info> Routing::get_routing_table(){
+std::map<int, routing_table_info> Routing::get_routing_table() {
   return routing_table;
 }
 
