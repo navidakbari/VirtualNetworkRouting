@@ -212,3 +212,7 @@ std::map<std::string, node_physical_info> Routing::get_nodes_info(){
 std::map<int, routing_table_info> Routing::get_routing_table(){
   return routing_table;
 }
+
+std::map<int, std::string> Routing::get_adj_mapping(){
+  return adj_mapping;
+}
