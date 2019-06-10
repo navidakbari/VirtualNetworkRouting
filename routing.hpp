@@ -63,6 +63,7 @@ private:
   void fill_interfaces(lnxinfo_t *links_info);
   void fill_routing_table();
   bool does_dv_have_row(int row_key);
+  bool does_local_interface_up(std::string local_ip);
 
 public:
   Routing(lnxinfo_t *links_info);

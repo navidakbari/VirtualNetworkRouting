@@ -48,6 +48,14 @@ bool Routing::does_interface_up(string remote_ip) {
   return false;
 }
 
+bool Routing::does_local_interface_up(std::string local_ip) {
+  for (uint i = 0; i < interfaces.size(); i++) {
+    if (interfaces[i].local == local_ip)
+      return interfaces[i].up;
+  }
+  return false;
+}
+
 void Routing::down_interface(unsigned interface_id) {
   if (interface_id >= interfaces.size()) {
     dbg(DBG_ERROR, "interface is not valid!\n");
@@ -85,6 +93,8 @@ std::vector<route> Routing::get_routes() {
 
     route new_route;
     if (it->second.port == info.port) {
+      if(!does_local_interface_up(it->first))
+        continue;
       new_route.cost = 0;
       new_route.dst = it->first;
       new_route.loc = it->first;
@@ -293,7 +303,7 @@ void Routing::delete_expired_nodes() {
 }
 
 std::string Routing::find_interface(int for_port) {
-  for (int i = 0; i < interfaces.size() && interfaces[i].up; i++) {
+  for (uint i = 0; i < interfaces.size() && interfaces[i].up; i++) {
     if (interfaces[i].remote_port == for_port) {
       return interfaces[i].local;
     }

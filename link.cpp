@@ -135,7 +135,6 @@ void Link::recv_data() {
   while (true) {
     char buffer[1400];
     int size;
-    unsigned int len;
 
     size = recvfrom(sockfd, (char *)buffer, 1200, 0, NULL, 0);
     // TODO: recive data more than buffer
@@ -169,12 +168,9 @@ int Link::get_self_port() { return self_port; }
 
 void Link::send_user_data(std::string virtual_ip, std::string payload,
                           Routing *routing, int protocol) {
-  struct sockaddr_in client_addr;
   iphdr header;
   header.protocol = protocol;
   strcpy(header.desIP, virtual_ip.c_str());
-  client_addr.sin_family = AF_INET;
-  client_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
   int des_port, next_hub_port;
   if (routing->get_nodes_info().count(virtual_ip) &&
       routing->get_routing_table().count(
@@ -216,8 +212,9 @@ void Link::forwarding(std::string data, iphdr header, Routing *routing,
 
 int Link::get_arrived_interface(int last_hub, Routing *routing) {
   string hub_vid = routing->get_adj_mapping()[last_hub];
-  for (int i = 0; i < routing->get_interfaces().size(); i++) {
+  for (uint i = 0; i < routing->get_interfaces().size(); i++) {
     if (routing->get_interfaces()[i].local == hub_vid)
       return i;
   }
+  return -1;
 }

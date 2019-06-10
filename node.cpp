@@ -148,7 +148,7 @@ void recv_data_handler(std::string data, iphdr header) {
     string lhip = header.lhIP;
     if(!routing->does_interface_up(lhip))
         return ;
-    if(header.daddr == link_layer->get_self_port()){
+    if(header.daddr == (uint32_t) link_layer->get_self_port()){
         std::cout << "------Node received packet!------\n" << endl;
         std::cout << "\t arrived link: \t\t" << link_layer->get_arrived_interface(header.lhaddr, routing) << endl;
         std::cout << "\t source IP: \t\t"  << header.sourceIP  << endl;
@@ -186,11 +186,11 @@ void recv_traceroute_msg(std::string data, iphdr header){
     string lhip = header.lhIP;
     if(!routing->does_interface_up(lhip))
         return ;
-    if(traceroute && header.daddr == link_layer->get_self_port()){
+    if(traceroute && header.daddr == (uint32_t) link_layer->get_self_port()){
         traceroute_host.push_back(header.sourceIP);
         if(data == "traceroute finished"){
             cout << traceroute_host[0] << endl;
-            for(int i = 1; i < traceroute_host.size(); i++){
+            for(uint i = 1; i < traceroute_host.size(); i++){
                 cout << i << " " << traceroute_host[i] << endl;
             }
             cout << "Traceroute finished in " << traceroute_host.size() << " hobs" << endl;
@@ -199,7 +199,7 @@ void recv_traceroute_msg(std::string data, iphdr header){
         }
         return;
     }
-    if((header.daddr == link_layer->get_self_port())){
+    if((header.daddr == (uint32_t) link_layer->get_self_port())){
         link_layer->send_user_data(header.sourceIP,"traceroute finished",routing, IPPROTO_TRACEROUTE);
     }else{
         link_layer->send_user_data(header.sourceIP,"traceroute",routing, IPPROTO_TRACEROUTE);

@@ -115,7 +115,7 @@ void print_interfaces(std::vector<interface> interfaces) {
        << "\t\t" << _GREEN_ << "rem"
        << "\t\t        " << _RED_ << "loc" << endl;
   cout << _BWHITE_;
-  for (int i = 0; i < interfaces.size(); i++) {
+  for (uint i = 0; i < interfaces.size(); i++) {
     if(!interfaces[i].up)
       continue;
     cout << i << "\t\t" << interfaces[i].remote << "\t\t"
@@ -128,7 +128,7 @@ void print_routes(std::vector<struct route> routes) {
        << "\t\t" << _GREEN_ << "dst"
        << "\t\t        " << _RED_ << "loc" << endl;
   cout << _BWHITE_;
-  for (int i = 0; i < routes.size(); i++) {
+  for (uint i = 0; i < routes.size(); i++) {
     cout << routes[i].cost << " \t\t" << routes[i].dst << "\t\t"
          << routes[i].loc << endl;
   }
