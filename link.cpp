@@ -175,11 +175,12 @@ void Link::send_user_data(std::string virtual_ip, std::string payload, Routing *
   client_addr.sin_family = AF_INET;
   client_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
   int des_port, next_hub_port;
-  //TODO: add dbg msg
-  if(routing->get_nodes_info().count(virtual_ip)){
+  if(routing->get_nodes_info().count(virtual_ip) &&
+        routing->get_routing_table().count(routing->get_nodes_info()[virtual_ip].port) != 0 ) {
     des_port = routing->get_nodes_info()[virtual_ip].port;
     header.daddr = des_port;
   }else{
+    dbg(DBG_ERROR, "this ip is not reachable.\n");
     return;
   }
 

@@ -99,7 +99,7 @@ void send_cmd(const char *line){
 	dbg(DBG_ERROR, "syntax error (payload unspecified)\n");
 	return;
     }
-    //TODO send
+    
     link_layer->send_user_data(ip_string, data, routing, IPPROTO_DATA);
 }
 
