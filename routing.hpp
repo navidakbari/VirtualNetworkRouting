@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <semaphore.h>
 
 #include "lnxparse.hpp"
 #define INFINITY INT_MAX
@@ -50,6 +51,8 @@ private:
   std::vector<interface> interfaces;
   std::map<int, long> creation_time;
   node_physical_info info;
+  sem_t dt_sem; // for distance_table
+  sem_t rt_sem; // for routing_table
 
   void fill_nodes_info(lnxinfo_t *links_info);
   void fill_distance_table(lnxinfo_t *links_info);

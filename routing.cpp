@@ -17,7 +17,8 @@ Routing::Routing(lnxinfo_t *links_info) {
   //   creation_time[it->first] = (long) time(0);
   // }
 
-  lnxbody_t *node = links_info->body;
+  sem_init(&dt_sem, 0, 1);
+  sem_init(&rt_sem, 0, 1);
 }
 
 void Routing::fill_interfaces(lnxinfo_t *links_info) {
@@ -96,6 +97,7 @@ void Routing::fill_distance_table(lnxinfo_t *links_info) {
 }
 
 void Routing::fill_routing_table() {
+  sem_wait(&rt_sem);
   for (auto it = distance_table.begin();
        !distance_table.empty() && it != distance_table.end(); it++) {
     map<int, int> row = it->second;
@@ -109,6 +111,7 @@ void Routing::fill_routing_table() {
     }
     routing_table[it->first] = min;
   }
+  sem_post(&rt_sem);
   // print_routing_table(routing_table);
   // print_creation_time(creation_time);
 }
@@ -124,7 +127,7 @@ void Routing::fill_adj_mapping(lnxinfo_t *links_info) {
 void Routing::update_distance_table(
     int from, std::map<int, routing_table_info> taken_routing_table) {
   std::map<int, std::map<int, int>> new_distance_table = distance_table;
-
+  sem_wait(&dt_sem);
   map<int, int> row;
   for (auto it = adj_mapping.begin();
        !adj_mapping.empty() && it != adj_mapping.end(); it++)
@@ -163,6 +166,7 @@ void Routing::update_distance_table(
   }
 
   distance_table = new_distance_table;
+  sem_post(&dt_sem);
   fill_routing_table();
 
   print_routing_table(routing_table);
@@ -203,14 +207,17 @@ void Routing::send_quit_to_adj(Link link) {
 }
 
 void Routing::delete_node(int port) {
+  sem_wait(&dt_sem);
   distance_table.erase(port);
 
   for (auto it = distance_table.begin();
        !distance_table.empty() && it != distance_table.end(); it++) {
     it->second.erase(port);
   }
-
+  sem_post(&dt_sem);
+  sem_wait(&rt_sem);
   routing_table.erase(port);
+  sem_post(&rt_sem);
 
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && it != nodes_info.end(); it++) {
