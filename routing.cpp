@@ -41,6 +41,8 @@ std::vector<route> Routing::get_routes() {
   vector<route> routes;
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && nodes_info.end() != it; it++) {
+    if(routing_table.count(it->second.port) == 0)
+      continue;
     route new_route;
     if (it->second.port == info.port) {
       new_route.cost = 0;
@@ -219,11 +221,15 @@ void Routing::delete_node(int port) {
   routing_table.erase(port);
   sem_post(&rt_sem);
 
+  std::map<string, node_physical_info> new_nodes_info;
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && it != nodes_info.end(); it++) {
-    if (it->second.port == port)
-      nodes_info.erase(it);
+    if (it->second.port != port){
+      cerr << "add " << it->first << endl;
+      new_nodes_info[it->first] = it->second;
+    }
   }
+  nodes_info = new_nodes_info;
 
   // adj_mapping.erase(port);
 }
