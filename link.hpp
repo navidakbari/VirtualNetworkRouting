@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <iostream>
+#include <map>
 #include <netinet/in.h>
 #include <sstream>
 #include <stdio.h>
@@ -16,7 +17,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
-#include <map>
 
 class Routing;
 
@@ -46,18 +46,20 @@ public:
   void recv_data();
   void
   send_routing_table(std::map<int, struct routing_table_info> routing_table,
-                     std::string ip, int port);
+                     std::string ip, int port, std::string self_virtual_ip);
   void
   send_nodes_info(std::map<std::string, struct node_physical_info> nodes_info,
-                  std::string ip, int port);
+                  std::string ip, int port, std::string self_virtual_ip);
   void send_quit_msg(std::string ip, int port);
-  void send_user_data(std::string virtual_ip, std::string payload, Routing *routing, int protocol);
+  void send_user_data(std::string virtual_ip, std::string payload,
+                      Routing *routing, int protocol);
   void register_handler(protocol_handler handler);
   static std::map<int, struct routing_table_info>
   deserialize_routing_table(std::string data);
   static std::map<std::string, struct node_physical_info>
   deserialize_nodes_info(std::string data);
-  void forwarding(std::string data, iphdr header, Routing *routing, int protocol);
+  void forwarding(std::string data, iphdr header, Routing *routing,
+                  int protocol);
   int get_arrived_interface(int last_hub, Routing *routing);
 };
 

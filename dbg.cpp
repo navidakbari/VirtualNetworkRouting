@@ -103,7 +103,7 @@ void print_routing_table(std::map<int, struct routing_table_info> r) {
          << to_string(it->second.cost) << endl;
 }
 
-void print_creation_time(std::map<int, long> c) {
+void print_creation_time(std::map<int, long long> c) {
   cout << "creation time is : " << endl;
   for (auto it = c.begin(); !c.empty() && it != c.end(); it++) {
     cout << it->first << " " << it->second << endl;
@@ -112,22 +112,24 @@ void print_creation_time(std::map<int, long> c) {
 
 void print_interfaces(std::vector<interface> interfaces) {
   cout << _BLUE_ << "id"
-       << "     " << _GREEN_ << "rem"
-       << "               " << _RED_ << "loc" << endl;
+       << "\t\t" << _GREEN_ << "rem"
+       << "\t\t        " << _RED_ << "loc" << endl;
   cout << _BWHITE_;
   for (int i = 0; i < interfaces.size(); i++) {
-    cout << i << "      " << interfaces[i].remote << "       "
+    if(!interfaces[i].up)
+      continue;
+    cout << i << "\t\t" << interfaces[i].remote << "\t\t"
          << interfaces[i].local << endl;
   }
 }
 
 void print_routes(std::vector<struct route> routes) {
   cout << _BLUE_ << "cost"
-       << "     " << _GREEN_ << "dst"
-       << "               " << _RED_ << "loc" << endl;
+       << "\t\t" << _GREEN_ << "dst"
+       << "\t\t        " << _RED_ << "loc" << endl;
   cout << _BWHITE_;
   for (int i = 0; i < routes.size(); i++) {
-    cout << routes[i].cost << "     " << routes[i].dst << "       "
+    cout << routes[i].cost << " \t\t" << routes[i].dst << "\t\t"
          << routes[i].loc << endl;
   }
 }

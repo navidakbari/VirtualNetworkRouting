@@ -1,5 +1,11 @@
 #include "routing.hpp"
+
 using namespace std;
+
+long long mil() {
+  using namespace std::chrono;
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+};
 
 Routing::Routing(lnxinfo_t *links_info) {
   // filling self info
@@ -28,9 +34,44 @@ void Routing::fill_interfaces(lnxinfo_t *links_info) {
     new_interface.local = inet_ntoa(node->local_virt_ip);
     new_interface.remote = inet_ntoa(node->remote_virt_ip);
     new_interface.remote_port = (int)node->remote_phys_port;
+    new_interface.up = true;
     interfaces.push_back(new_interface);
     node = node->next;
   }
+}
+
+bool Routing::does_interface_up(string remote_ip) {
+  for (uint i = 0; i < interfaces.size(); i++) {
+    if (interfaces[i].remote == remote_ip)
+      return interfaces[i].up;
+  }
+  return false;
+}
+
+void Routing::down_interface(unsigned interface_id) {
+  if (interface_id >= interfaces.size()) {
+    dbg(DBG_ERROR, "interface is not valid!\n");
+    return;
+  }
+
+  if (!interfaces[interface_id].up) {
+    dbg(DBG_ERROR, "interface is already down\n");
+    return;
+  }
+  interfaces[interface_id].up = false;
+}
+
+void Routing::up_interface(unsigned interface_id) {
+  if (interface_id >= interfaces.size()) {
+    dbg(DBG_ERROR, "interface is not valid!\n");
+    return;
+  }
+  
+  if (interfaces[interface_id].up) {
+    dbg(DBG_ERROR, "interface is already up\n");
+    return;
+  }
+  interfaces[interface_id].up = true;
 }
 
 std::vector<interface> Routing::get_interfaces() { return interfaces; }
@@ -41,7 +82,7 @@ std::vector<route> Routing::get_routes() {
   vector<route> routes;
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && nodes_info.end() != it; it++) {
-    
+
     route new_route;
     if (it->second.port == info.port) {
       new_route.cost = 0;
@@ -50,7 +91,7 @@ std::vector<route> Routing::get_routes() {
       routes.push_back(new_route);
       continue;
     }
-    if(routing_table.count(it->second.port) == 0)
+    if (routing_table.count(it->second.port) == 0)
       continue;
 
     new_route.cost = routing_table[it->second.port].cost;
@@ -138,7 +179,7 @@ void Routing::update_distance_table(
   row[from] = 1;
   new_distance_table[from] = row;
   if (routing_table[from].cost <= 1 || routing_table.count(from) < 1) {
-    creation_time[from] = (long)time(0);
+    creation_time[from] = mil();
   }
 
   for (auto it = taken_routing_table.begin();
@@ -154,16 +195,15 @@ void Routing::update_distance_table(
         row[it->first] = INFINITY;
       row[from] = EDGE_WEIGHT + it->second.cost;
       new_distance_table[it->first] = row;
-      creation_time[it->first] = (long)time(0);
+      creation_time[it->first] = mil();
     } else {
       // second update existing rows
-      if (new_distance_table[it->first][from] > EDGE_WEIGHT +
-      it->second.cost) {
-        creation_time[it->first] = (long)time(0);
+      if (new_distance_table[it->first][from] > EDGE_WEIGHT + it->second.cost) {
+        creation_time[it->first] = mil();
         new_distance_table[it->first][from] = EDGE_WEIGHT + it->second.cost;
       }
       if (routing_table[it->first].cost >= EDGE_WEIGHT + it->second.cost) {
-        creation_time[it->first] = (long)time(0);
+        creation_time[it->first] = mil();
       }
     }
   }
@@ -195,10 +235,12 @@ void Routing::send_routing_to_adj(Link link) {
   while (true) {
     for (auto it = adj_mapping.begin();
          !adj_mapping.empty() && it != adj_mapping.end(); it++) {
-      link.send_routing_table(routing_table, "127.0.0.1", it->first);
-      link.send_nodes_info(nodes_info, "127.0.0.1", it->first);
+      link.send_routing_table(routing_table, "127.0.0.1", it->first,
+                              find_interface(it->first));
+      link.send_nodes_info(nodes_info, "127.0.0.1", it->first,
+                           find_interface(it->first));
     }
-    usleep(500000);
+    usleep(250000);
   }
 }
 
@@ -225,7 +267,7 @@ void Routing::delete_node(int port) {
   std::map<string, node_physical_info> new_nodes_info;
   for (auto it = nodes_info.begin();
        !nodes_info.empty() && it != nodes_info.end(); it++) {
-    if (it->second.port != port){
+    if (it->second.port != port) {
       new_nodes_info[it->first] = it->second;
     }
   }
@@ -239,15 +281,24 @@ void Routing::delete_expired_nodes() {
 
     for (auto it = creation_time.begin();
          !creation_time.empty() && it != creation_time.end(); it++) {
-      if (it->second + 3 < (long)time(0)) {
+      if (it->second + 600 < mil()) {
         creation_time.erase(it->first);
         delete_node(it->first);
         // cerr << "deleting node " << it->first << endl;
         // break;
       }
     }
-    sleep(1);
+    usleep(500000);
   }
+}
+
+std::string Routing::find_interface(int for_port) {
+  for (int i = 0; i < interfaces.size() && interfaces[i].up; i++) {
+    if (interfaces[i].remote_port == for_port) {
+      return interfaces[i].local;
+    }
+  }
+  return "";
 }
 
 std::map<std::string, node_physical_info> Routing::get_nodes_info() {
@@ -258,6 +309,4 @@ std::map<int, routing_table_info> Routing::get_routing_table() {
   return routing_table;
 }
 
-std::map<int, std::string> Routing::get_adj_mapping(){
-  return adj_mapping;
-}
+std::map<int, std::string> Routing::get_adj_mapping() { return adj_mapping; }
