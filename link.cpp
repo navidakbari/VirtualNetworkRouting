@@ -154,8 +154,6 @@ void Link::recv_data() {
     bool data_exists = true;
     recv_len = recvfrom(sockfd, (char *)buffer, 64000, 0, NULL, 0);
     size += recv_len;
-    cout << "recv : " << recv_len << endl;
-
 
     iphdr rec_header;
     char *rec_data = (char *)malloc(size + 1 - sizeof(iphdr));
@@ -169,7 +167,6 @@ void Link::recv_data() {
     if(recv_len >= 1400){
       while(recv_len >= 1400){
         recv_len = recvfrom(sockfd, (char *)buffer + size, 64000, 0, NULL, 0);
-        cout << "recv : " << recv_len << endl;
       }
     }
 
