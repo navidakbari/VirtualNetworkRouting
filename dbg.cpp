@@ -111,11 +111,10 @@ void print_creation_time(std::map<int, long> c) {
 }
 
 void print_interfaces(std::vector<interface> interfaces) {
-  cout << "id"
-       << "     "
-       << "rem"
-       << "               "
-       << "loc" << endl;
+  cout << _BLUE_ << "id"
+       << "     " << _GREEN_ << "rem"
+       << "               " << _RED_ << "loc" << endl;
+  cout << _BWHITE_;
   for (int i = 0; i < interfaces.size(); i++) {
     cout << i << "      " << interfaces[i].remote << "       "
          << interfaces[i].local << endl;
@@ -123,11 +122,10 @@ void print_interfaces(std::vector<interface> interfaces) {
 }
 
 void print_routes(std::vector<struct route> routes) {
-  cout << "cost"
-       << "     "
-       << "dst"
-       << "               "
-       << "loc" << endl;
+  cout << _BLUE_ << "cost"
+       << "     " << _GREEN_ << "dst"
+       << "               " << _RED_ << "loc" << endl;
+  cout << _BWHITE_;
   for (int i = 0; i < routes.size(); i++) {
     cout << routes[i].cost << "     " << routes[i].dst << "       "
          << routes[i].loc << endl;
