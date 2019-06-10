@@ -41,6 +41,7 @@ void help_cmd(const char *line) {
 	   "- up [integer]: Bring an interface \"up\" (it must be an existing interface, probably one you brought down)\n"
 	   "- down [integer]: Bring an interface \"down\"\n"
 	   "- send [ip] [protocol] [payload]: sends payload with protocol=protocol to virtual-ip ip\n"
+       "- traceroute [ip]: show traceroute\n"
 	   "- q: quit this node\n");
 }
 
@@ -61,8 +62,7 @@ void down_cmd(const char *line){
 	dbg(DBG_ERROR, "syntax error (usage: down [interface])\n");
 	return;
     }
-    //TODO down
-    dbg(DBG_ERROR, "down_cmd: NOT YET IMPLEMENTED\n");
+    routing->down_interface(interface);
 }
 
 void up_cmd(const char *line){
@@ -72,8 +72,7 @@ void up_cmd(const char *line){
 	dbg(DBG_ERROR, "syntax error (usage: up [interface])\n");
 	return;
     }
-    //TODO up
-    dbg(DBG_ERROR, "up_cmd: NOT YET IMPLEMENTED\n");
+    routing->up_interface(interface);
 }
 
 void send_cmd(const char *line){
@@ -99,7 +98,7 @@ void send_cmd(const char *line){
 	dbg(DBG_ERROR, "syntax error (payload unspecified)\n");
 	return;
     }
-    
+
     link_layer->send_user_data(ip_string, data, routing, IPPROTO_DATA);
 }
 
@@ -146,7 +145,10 @@ void quit_msg_handler(std::string data, iphdr header){
 }
 
 void recv_data_handler(std::string data, iphdr header) {
-    if(header.daddr == link_layer->get_self_port()){
+    string lhip = header.lhIP;
+    if(!routing->does_interface_up(lhip))
+        return ;
+    if(header.daddr == (uint32_t) link_layer->get_self_port()){
         std::cout << "------Node received packet!------\n" << endl;
         std::cout << "\t arrived link: \t\t" << link_layer->get_arrived_interface(header.lhaddr, routing) << endl;
         std::cout << "\t source IP: \t\t"  << header.sourceIP  << endl;
@@ -162,6 +164,9 @@ void recv_data_handler(std::string data, iphdr header) {
 }
 
 void recv_routing_table_handler(std::string data, iphdr header) {
+    string lhip = header.lhIP;
+    if(!routing->does_interface_up(lhip))
+        return ;
     std::map<int, routing_table_info> routing_table =
         Link::deserialize_routing_table(data);
     routing->update_distance_table((int) header.saddr, routing_table);
@@ -169,18 +174,23 @@ void recv_routing_table_handler(std::string data, iphdr header) {
 }
 
 void recv_nodes_info_handler(std::string data, iphdr header) {
+    string lhip = header.lhIP;
+    if(!routing->does_interface_up(lhip))
+        return ;
     std::map<std::string, node_physical_info> nodes_info = 
         Link::deserialize_nodes_info(data);
     routing->update_nodes_info(nodes_info);
 }
 
 void recv_traceroute_msg(std::string data, iphdr header){
-    
-    if(traceroute && header.daddr == link_layer->get_self_port()){
+    string lhip = header.lhIP;
+    if(!routing->does_interface_up(lhip))
+        return ;
+    if(traceroute && header.daddr == (uint32_t) link_layer->get_self_port()){
         traceroute_host.push_back(header.sourceIP);
         if(data == "traceroute finished"){
             cout << traceroute_host[0] << endl;
-            for(int i = 1; i < traceroute_host.size(); i++){
+            for(uint i = 1; i < traceroute_host.size(); i++){
                 cout << i << " " << traceroute_host[i] << endl;
             }
             cout << "Traceroute finished in " << traceroute_host.size() << " hobs" << endl;
@@ -189,7 +199,7 @@ void recv_traceroute_msg(std::string data, iphdr header){
         }
         return;
     }
-    if((header.daddr == link_layer->get_self_port())){
+    if((header.daddr == (uint32_t) link_layer->get_self_port())){
         link_layer->send_user_data(header.sourceIP,"traceroute finished",routing, IPPROTO_TRACEROUTE);
     }else{
         link_layer->send_user_data(header.sourceIP,"traceroute",routing, IPPROTO_TRACEROUTE);
@@ -222,8 +232,6 @@ int main(int argc, char **argv){
     unsigned i;
     int ret;
 
-
-    //TODO Initialize your layers!
     lnxinfo_t *links_info = parse_links(argv[1]);
     link_layer = new Link(links_info->local_phys_port);
     routing = new Routing(links_info);
