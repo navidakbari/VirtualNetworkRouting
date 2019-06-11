@@ -124,20 +124,26 @@ int Link::send_data(iphdr header, string data, string ip, int port) {
   toSend = (char *)malloc(sizeof(iphdr) + data.size() + 1);
   memcpy(toSend, (char *)&header, sizeof(iphdr));
   memcpy(toSend + sizeof(iphdr), data.c_str(), data.size() + 1);
-  // TODO: Send data more than buffer
 
+
+  int data_lenght = sizeof(iphdr) + data.size() + 1;
+
+  if(data_lenght > 1400){
+    dbg(DBG_ERROR, "error: data size shouldn't be more than 1400 byte\n");
+    return -1;
+  }
+  
   int size = sendto(sockfd, toSend, sizeof(iphdr) + data.size() + 1, 0,
                     (const struct sockaddr *)&client_addr, sizeof(client_addr));
   return size;
 }
 
 void Link::recv_data() {
-  while (true) {
+   while (true) {
     char buffer[1400];
     int size;
 
-    size = recvfrom(sockfd, (char *)buffer, 1200, 0, NULL, 0);
-    // TODO: recive data more than buffer
+    size = recvfrom(sockfd, (char *)buffer, 1400, 0, NULL, 0);
 
     iphdr rec_header;
     char *rec_data = (char *)malloc(size + 1 - sizeof(iphdr));
@@ -147,9 +153,6 @@ void Link::recv_data() {
 
     string rec_data_str = rec_data;
 
-    // cout << "header : " << (int)rec_header.protocol << endl;
-    // << rec_data_str << endl;
-    // cout << rec_header.saddr << endl;
     for (unsigned int i = 0; i < handlers.size(); i++) {
       if (handlers[i].protocol_num == (int)rec_header.protocol) {
         handlers[i].handler(rec_data_str, rec_header);

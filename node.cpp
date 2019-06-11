@@ -156,7 +156,7 @@ void recv_data_handler(std::string data, iphdr header) {
         std::cout << "\t protocol: \t\t" << (int)header.protocol <<endl;
         std::cout << "\t payload length: \t" << data.length() << endl;
         std::cout << "\t payload: \t\t" << data <<endl;
-        std::cout << "---------------------------" << endl;
+        std::cout << "----------------------------------" << endl;
         return;
     }
     
@@ -170,7 +170,6 @@ void recv_routing_table_handler(std::string data, iphdr header) {
     std::map<int, routing_table_info> routing_table =
         Link::deserialize_routing_table(data);
     routing->update_distance_table((int) header.saddr, routing_table);
-    // routing->delete_expired_nodes();
 }
 
 void recv_nodes_info_handler(std::string data, iphdr header) {
@@ -193,7 +192,7 @@ void recv_traceroute_msg(std::string data, iphdr header){
             for(uint i = 1; i < traceroute_host.size(); i++){
                 cout << i << " " << traceroute_host[i] << endl;
             }
-            cout << "Traceroute finished in " << traceroute_host.size() << " hobs" << endl;
+            cout << "Traceroute finished in " << traceroute_host.size() - 1 << " hobs" << endl;
             traceroute = false;
             traceroute_host.clear();
         }
@@ -285,8 +284,7 @@ int main(int argc, char **argv){
 	free(line);
 #endif
     }
-
-    //TODO Clean up your layers!
+    
     sending_routing_table_thread.detach();
     recv_routing_table_thread.detach();
     delete_expired_nodes_thread.detach();
