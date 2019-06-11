@@ -30,8 +30,8 @@ std::thread recv_routing_table_thread;
 std::thread delete_expired_nodes_thread;
 Link *link_layer;
 Routing *routing;
-bool traceroute = false;
 vector <string> traceroute_host;
+
 void help_cmd(const char *line) {
     (void) line;
 
@@ -117,7 +117,6 @@ void traceroute_cmd(const char *line){
     string vaddr = routing->get_adj_mapping()[routing->get_routing_table()[routing->get_nodes_info()[ip_string].port].best_route_port];
     string tracemsg = "Traceroute from " + vaddr + " to " + ip_string;
 
-    traceroute = true;
     traceroute_host.push_back(tracemsg);
     traceroute_host.push_back(vaddr);
     link_layer->send_user_data(ip_string, "traceroute", routing, IPPROTO_TRACEROUTE);
@@ -182,10 +181,7 @@ void recv_nodes_info_handler(std::string data, iphdr header) {
 }
 
 void recv_traceroute_msg(std::string data, iphdr header){
-    string lhip = header.lhIP;
-    if(!routing->does_interface_up(lhip))
-        return ;
-    if(traceroute && header.daddr == (uint32_t) link_layer->get_self_port()){
+    if(header.daddr == (uint32_t) link_layer->get_self_port()){
         traceroute_host.push_back(header.sourceIP);
         if(data == "traceroute finished"){
             cout << traceroute_host[0] << endl;
@@ -193,18 +189,24 @@ void recv_traceroute_msg(std::string data, iphdr header){
                 cout << i << " " << traceroute_host[i] << endl;
             }
             cout << "Traceroute finished in " << traceroute_host.size() - 1 << " hobs" << endl;
-            traceroute = false;
             traceroute_host.clear();
         }
         return;
     }
+    link_layer->forwarding(data, header, routing, IPPROTO_TRACEROUTE_RESPONSE);
+}
+
+void send_traceroute_msg(std::string data, iphdr header){
+    string lhip = header.lhIP;
+    if(!routing->does_interface_up(lhip))
+        return;
+
     if((header.daddr == (uint32_t) link_layer->get_self_port())){
-        link_layer->send_user_data(header.sourceIP,"traceroute finished",routing, IPPROTO_TRACEROUTE);
+        link_layer->send_user_data(header.sourceIP,"traceroute finished",routing, IPPROTO_TRACEROUTE_RESPONSE);
     }else{
-        link_layer->send_user_data(header.sourceIP,"traceroute",routing, IPPROTO_TRACEROUTE);
+        link_layer->send_user_data(header.sourceIP,"traceroute",routing, IPPROTO_TRACEROUTE_RESPONSE);
         link_layer->forwarding(data, header, routing, IPPROTO_TRACEROUTE);
     }
-    
 }
 
 struct protocol_handler get_handler(void (*f)(std::string,iphdr) , int protocol){
@@ -239,7 +241,8 @@ int main(int argc, char **argv){
     link_layer->register_handler(get_handler(&recv_routing_table_handler, IPPROTO_ROUTING_TABLE));
     link_layer->register_handler(get_handler(&recv_nodes_info_handler, IPPROTO_NODES_INFO));
     link_layer->register_handler(get_handler(&quit_msg_handler, IPPROTO_QUIT_MSG));
-    link_layer->register_handler(get_handler(&recv_traceroute_msg, IPPROTO_TRACEROUTE));
+    link_layer->register_handler(get_handler(&send_traceroute_msg, IPPROTO_TRACEROUTE));
+    link_layer->register_handler(get_handler(&recv_traceroute_msg, IPPROTO_TRACEROUTE_RESPONSE));
 
     std::thread sending_routing_table_thread(&Routing::send_routing_to_adj, routing, *link_layer);
     std::thread recv_routing_table_thread(&Link::recv_data, link_layer);
