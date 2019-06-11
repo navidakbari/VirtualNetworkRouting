@@ -115,6 +115,8 @@ void traceroute_cmd(const char *line){
 	return;
     }
     string vaddr = routing->get_adj_mapping()[routing->get_routing_table()[routing->get_nodes_info()[ip_string].port].best_route_port];
+    if(vaddr == "")
+        dbg(DBG_ERROR, "this ip is not reachable.\n");
     string tracemsg = "Traceroute from " + vaddr + " to " + ip_string;
 
     traceroute_host.push_back(tracemsg);
