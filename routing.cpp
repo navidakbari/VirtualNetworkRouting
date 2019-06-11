@@ -259,7 +259,7 @@ void Routing::send_routing_to_adj(Link link) {
       link.send_nodes_info(nodes_info, "127.0.0.1", it->first,
                            find_interface(it->first));
     }
-    usleep(250000);
+    usleep(50000);
   }
 }
 
@@ -300,14 +300,14 @@ void Routing::delete_expired_nodes() {
 
     for (auto it = creation_time.begin();
          !creation_time.empty() && it != creation_time.end(); it++) {
-      if (it->second + 600 < mil()) {
+      if (it->second + 120 < mil()) {
         creation_time.erase(it->first);
         delete_node(it->first);
         // cerr << "deleting node " << it->first << endl;
         // break;
       }
     }
-    usleep(500000);
+    usleep(100000);
   }
 }
 
