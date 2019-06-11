@@ -17,6 +17,7 @@
 #include "lnxparse.hpp"
 #define INFINITY INT_MAX
 #define EDGE_WEIGHT 1
+#define COUNT_TO_INFINITY_MAX 64
 
 class Link;
 
@@ -73,6 +74,7 @@ public:
   void
   update_distance_table(int from,
                         std::map<int, routing_table_info> taken_routing_table);
+  void check_count_to_infinity();
   void
   update_nodes_info(std::map<std::string, node_physical_info> taken_nodes_info);
   void delete_expired_nodes();

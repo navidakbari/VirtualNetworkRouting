@@ -4,7 +4,8 @@ using namespace std;
 
 long long mil() {
   using namespace std::chrono;
-  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch())
+      .count();
 };
 
 Routing::Routing(lnxinfo_t *links_info) {
@@ -74,7 +75,7 @@ void Routing::up_interface(unsigned interface_id) {
     dbg(DBG_ERROR, "interface is not valid!\n");
     return;
   }
-  
+
   if (interfaces[interface_id].up) {
     dbg(DBG_ERROR, "interface is already up\n");
     return;
@@ -93,7 +94,7 @@ std::vector<route> Routing::get_routes() {
 
     route new_route;
     if (it->second.port == info.port) {
-      if(!does_local_interface_up(it->first))
+      if (!does_local_interface_up(it->first))
         continue;
       new_route.cost = 0;
       new_route.dst = it->first;
@@ -221,9 +222,17 @@ void Routing::update_distance_table(
   distance_table = new_distance_table;
   sem_post(&dt_sem);
   fill_routing_table();
-
+  check_count_to_infinity();
   // print_routing_table(routing_table);
   // print_creation_time(creation_time);
+}
+
+void Routing::check_count_to_infinity() {
+  map<int, routing_table_info> rt = routing_table;
+  for (auto it = rt.begin(); !rt.empty() && it != rt.end(); it++) {
+    if(it->second.cost > COUNT_TO_INFINITY_MAX)
+      delete_node(it->first);
+  }
 }
 
 bool Routing::does_dv_have_row(int row_key) {
