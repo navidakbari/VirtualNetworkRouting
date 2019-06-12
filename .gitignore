@@ -3,3 +3,4 @@
 node
 node.dSYM
 *.lnx
+.DS_Store

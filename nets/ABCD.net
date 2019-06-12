@@ -1,0 +1,7 @@
+node A localhost
+node B localhost
+node C localhost
+node D localhost
+A <-> B
+B <-> C
+C <-> D

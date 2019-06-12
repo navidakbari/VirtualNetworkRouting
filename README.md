@@ -1,11 +1,11 @@
 # Virtual Network Routes
 
-This project representing a virtual network router node. every node can connect to another node with routing algorithms and find their way to others. It uses [Distance Vector](https://en.wikipedia.org/wiki/Distance-vector_routing_protocol) routing protocol for routing and forwarding messages. It also supports `Traceroute` command to find nodes and interfaces.
+This project representing a virtual network routing among virtual nodes that connecting together via interfaces. Each packet goes to its destination using routing algorithms and find its way between nodes. It uses [Distance Vector](https://en.wikipedia.org/wiki/Distance-vector_routing_protocol) routing protocol for routing and forwarding messages. It also supports `Traceroute` command to find nodes and interfaces.
 
 
 ## How to run
 
-In project directory run 
+Install vagrant software and then in project directory run 
 ```bash
 vagrant up
 ```
